@@ -30,3 +30,18 @@
 *.exe
 *.out
 *.app
+
+# slxc files
+*.slxc
+slprj/*
+*.original
+*.jpg
+*.jpeg
+*.mat
+*.zip
+*.fig
+*.png
+*.pdf
+Figures/*
+clvfs/*
+
