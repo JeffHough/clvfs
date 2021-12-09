@@ -31,7 +31,7 @@
 *.out
 *.app
 
-# slxc files
+# other files:
 *.slxc
 slprj/*
 *.original
@@ -43,5 +43,5 @@ slprj/*
 *.png
 *.pdf
 Figures/*
-clvfs/*
-
+./clvfs/*
+*.asv
