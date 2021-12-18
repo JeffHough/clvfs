@@ -22,6 +22,10 @@ function [s] = solve_mRPI_linear_program(G_i, s1, s2, alpha1, alpha2, A_L, C, L,
 %   with G_i.
 
 %% START:
+
+% set the optimization options:
+options = optimoptions('linprog','Algorithm','interior-point', 'Display','off');
+
 % set the s-vector size to the same as G_i:
 s = zeros(size(G_i));
 
@@ -38,7 +42,7 @@ for iPower = 0:s2-1
    
    % solve these linear programs:
    x_squiggle = solve_x_squiggle_linear_program(-x_squiggle_constraint_vector, s1, alpha1, A_L, L, A_w, b_w, A_v, b_v);
-   v = linprog(-v_constraint_vector, A_v, b_v);
+   v = linprog(-v_constraint_vector, A_v, b_v, [], [], [], [], options);
    
    s = s + x_squiggle + v;
    

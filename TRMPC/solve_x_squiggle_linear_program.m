@@ -4,6 +4,9 @@ function x_squiggle = solve_x_squiggle_linear_program(G_i, s1, alpha1, A_L, L, A
 
 %% Start
 
+% set optimizer options:
+options = optimoptions('linprog','Algorithm','interior-point', 'Display','off');
+
 % Set the s-vector size to the same as G_i:
 x_squiggle = zeros(size(G_i));
 
@@ -19,8 +22,8 @@ for iPower = 0:s1-1
     v_constraint_vector = -L'*w_constraint_vector;
     
     % solve the linear programs:
-    w = linprog(-w_constraint_vector, A_w, b_w);
-    v = linprog(-v_constraint_vector, A_v, b_v);
+    w = linprog(-w_constraint_vector, A_w, b_w, [], [], [], [], options);
+    v = linprog(-v_constraint_vector, A_v, b_v, [], [], [], [], options);
     
     % add these to the x_squiggle vector:
     x_squiggle = x_squiggle + w + v;
