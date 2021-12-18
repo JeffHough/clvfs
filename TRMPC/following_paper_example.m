@@ -15,6 +15,7 @@ R = eye(2);
 sys = ss(A, B, C, D, 1);
 [K, P, ~] = lqr(sys, Q, R);
 
+% Kalman gain appears negative.
 K = -K;
 
 % Define the M_theta and N_theta matrices:

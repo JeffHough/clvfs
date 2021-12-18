@@ -43,5 +43,5 @@ slprj/*
 *.png
 *.pdf
 Figures/*
-./clvfs/*
+clvfs/
 *.asv
