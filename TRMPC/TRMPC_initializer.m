@@ -82,3 +82,14 @@ alpha = 0.01; % The size of the disturbance that we will allow.
 % get the maximum eigenvalue:
 
 
+
+
+
+
+
+
+
+
+
+
+
