@@ -1,5 +1,8 @@
 function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_mat, x_con_vec, Np, Gf, G_vec)
 
+    %% NEED TO MAKE THIS MORE SPECIFIC TO MY PROBLEM WITH THE MOVING TARGET... 
+     % SHOULD PASS IN THE MOVING DOCKING PORT INFO AS MATRIX ON ITS OWN?
+
     % Get the total size of the U and X vectors:
     u_dim = size(u_con_mat, 2);
     x_dim = size(x_con_mat, 2);
