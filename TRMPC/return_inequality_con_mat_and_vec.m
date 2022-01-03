@@ -1,8 +1,27 @@
-function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_mat, x_con_vec, Np, Gf, G_vec)
+function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, d, A_cone)
 
-    %% NEED TO MAKE THIS MORE SPECIFIC TO MY PROBLEM WITH THE MOVING TARGET... 
-     % SHOULD PASS IN THE MOVING DOCKING PORT INFO AS MATRIX ON ITS OWN?
-
+    %% DESCRIPTION: 
+    % this function produces the inequality matrix for the MPC solver.
+    
+    %% INPUTS:
+    % u_con_mat - the matrix for the input vector inequality:
+    % u_con_vec - the vector the input inequalities.
+    % x_con_mat - the matrix for the state inequalities... or at least a
+    %   matrix of the same size... since this will be rebuilt for every
+    %   timestep, it doesn't matter much.
+    % x_con_vec - the vector for the x_contstraint... stays constant
+    %   actually.
+    % Np - the number of steps considered for the MPC horizon.
+    % Gf - the 'terminal set' if one is used.
+    % G_vec - also part of the terminal set, again, if one is used.
+    % C_BI_Np - the C_BI estimates for the next Np steps.
+    % d - the docking cone position in the body-fixed frame of the target.
+    % A_cone - the matrix describing the approximated cone for docking.
+    
+    %% OUTPUTS:
+    % P - the inequality matrix.
+    % z - the inequality vector.
+     
     % Get the total size of the U and X vectors:
     u_dim = size(u_con_mat, 2);
     x_dim = size(x_con_mat, 2);
@@ -37,6 +56,19 @@ function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_
     iWidth = 1;
     
     for iMat = 1:Np
+       % RECREATE THE X_CON MATRIX... NEEDS INPUTS FROM THE UPCOMING
+       % ATTITUDE OF THE SPACECRAFT.
+       
+       C = C_BI_Np(:,:,iMat);
+       
+       x_con_mat = [-(C'*d)'       zeros(1,3);
+                   zeros(3)     eye(3);
+                   zeros(3)     -eye(3);
+                   A_cone*C     zeros(size(A_cone))];
+               
+       M_mat(end-x_dim:end,end-x_height:end) = x_con_mat;
+       
+       
        %  What is the end?
        iHeightEnd = iHeight + (u_height + x_height - 1);
        iWidthEnd = iWidth + (u_dim + x_dim - 1);
