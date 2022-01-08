@@ -1,4 +1,4 @@
-function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, d, A_cone)
+function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec_reduced, x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, d, A_cone, C_CB)
 
     %% DESCRIPTION: 
     % this function produces the inequality matrix for the MPC solver.
@@ -9,14 +9,16 @@ function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_
     % x_con_mat - the matrix for the state inequalities... or at least a
     %   matrix of the same size... since this will be rebuilt for every
     %   timestep, it doesn't matter much.
-    % x_con_vec - the vector for the x_contstraint... stays constant
-    %   actually.
     % Np - the number of steps considered for the MPC horizon.
     % Gf - the 'terminal set' if one is used.
     % G_vec - also part of the terminal set, again, if one is used.
     % C_BI_Np - the C_BI estimates for the next Np steps.
     % d - the docking cone position in the body-fixed frame of the target.
     % A_cone - the matrix describing the approximated cone for docking.
+    
+    % NOTE - THE X-CONSTRAINT VECTOR HAS TO BE RE-SOLVED FOR EVERY SINGLE
+    % TIMESTEP, SINCE IT IS BASED ON THE MAX VALUE OF X_CON_MAT*VECTOR, AND
+    % X_CON_MAT CHANGES AT EVERY TIMESTEP BASED ON ROTATION.
     
     %% OUTPUTS:
     % P - the inequality matrix.
@@ -47,10 +49,7 @@ function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_
     
     % Create a single instance of the combined U and X constraint matrix:
     M_mat = [u_con_mat, zeros(u_height, x_dim);
-             zeros(x_height, u_dim), x_con_mat];
-
-    M_vec = [u_con_vec;x_con_vec];
-         
+             zeros(x_height, u_dim), x_con_mat];         
     % Loop through, filling in the values:
     iHeight = 1;
     iWidth = 1;
@@ -59,17 +58,24 @@ function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_
        % RECREATE THE X_CON MATRIX... NEEDS INPUTS FROM THE UPCOMING
        % ATTITUDE OF THE SPACECRAFT.
        
-       C = C_BI_Np(:,:,iMat);
+       C_BI = C_BI_Np(:,:,iMat);
        
-       x_con_mat = [-(C'*d)'       zeros(1,3);
+       x_con_mat = [-(C_BI'*d)'       zeros(1,3);
                    zeros(3)     eye(3);
                    zeros(3)     -eye(3);
-                   A_cone*C     zeros(size(A_cone))];
+                   A_cone*C_CB*C_BI     zeros(size(A_cone))];
                
        M_mat(end-x_dim:end,end-x_height:end) = x_con_mat;
        
+       % Use the new constraint matrix to solve for the corresponding
+       % reduced constraint vector:
        
-       %  What is the end?
+       
+       
+       % Put the constraints together into a single vector:
+       M_vec = [u_con_vec_reduced;x_con_vec_reduced];
+       
+       %  Get the ending indices:
        iHeightEnd = iHeight + (u_height + x_height - 1);
        iWidthEnd = iWidth + (u_dim + x_dim - 1);
        
