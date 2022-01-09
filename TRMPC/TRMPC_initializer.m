@@ -39,6 +39,22 @@ sys_d = c2d(sys, FixedStep, 'zoh');
 A_d = sys_d.A;
 B_d = sys_d.B;
 
+%% CREATE SETS FOR THE DYNAMICS AND MEASUREMENT NOISE:
+
+% CREATE MATRIX AND VECTOR TO DESCRIBE THE MEASUREMENT NOISE SET:
+max_mes_noise = [0.1 ; 0.1 ; 0.1 ; 0.05 ; 0.05 ; 0.05];
+max_mes_constraint_vector = [max_mes_noise;max_mes_noise];
+
+% max tracking error matrix
+max_mes_constraint_matrix = [eye(6);-eye(6)];
+
+% CREATE MATRIX AND VECTOR TO DESCRIBE THE MEASUREMENT NOISE SET:
+max_dist_noise = [0.1 ; 0.1 ; 0.1];
+max_dist_constraint_vector = [max_dist_noise;max_dist_noise];
+
+% max tracking error matrix
+max_dist_constraint_matrix = [eye(3);-eye(3)];
+
 %% Select an LQR controller
 
 R = 10*eye(3);
@@ -59,18 +75,10 @@ u_max = ones(6,1)*u_max_scalar;
 % minimize -(Au*K)(iRow,:) * e
 
 premult_matrix = Au*K;
-bu = zeros(6,1);
-
-% CREATE MATRIX AND VECTOR TO DESCRIBE THE TRACKING ERROR SET:
-% max TRACKING error vector:
-e_max_vect = [0.1 ; 0.1 ; 0.1 ; 0.05 ; 0.05 ; 0.05];
-error_constraint_vector = [e_max_vect;e_max_vect];
-
-% max tracking error matrix
-error_constraint_matrix = [eye(6);-eye(6)];
+%bu = zeros(6,1);
 
 % solve for the reduced MPC constraint vector:
-u_max_mpc = return_reduced_constraints(premult_matrix, error_constraint_matrix, error_constraint_vector, u_max);
+%u_max_mpc = return_reduced_constraints(premult_matrix, error_constraint_matrix, error_constraint_vector, u_max);
 
 
 %% Solving the mRPI state set:
@@ -96,6 +104,10 @@ max_eig = max(abs(eig(A_observer)));
 % solve for "s" of the observer.
 s_observer = ceil(log(alpha)/log(max_eig));
 
+% What do we get if we try to solve for bu?:
+s = solve_x_bar_linear_program(premult_matrix, s_observer, s_control, 0.01, 0.01, A_observer, C, L, A_controlled,... 
+    max_dist_constraint_matrix, max_dist_constraint_vector, max_mes_constraint_matrix, max_mes_constraint_vector);
+
 %% Now, we can get the inequality matrix, solve the mRPI, and then get the inequality vector.
 
 % An initial x_con_matrix - just for size.
@@ -116,6 +128,8 @@ v_max = [1;1;1];
 % Choose some random rotation matrix for the cone (use this to get o_hat in
 % CLVF)
 C_CB = C3(pi/8)*C1(pi/7);
+
+
 
 
 

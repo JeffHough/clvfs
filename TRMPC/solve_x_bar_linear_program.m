@@ -1,4 +1,4 @@
-function [s] = solve_x_bar_linear_program(G_i, s1, s2, alpha1, alpha2, A_L, C, L, A_K, A_w, b_w, A_v, b_v)
+function [s] = solve_x_bar_linear_program(G_i, s_observer, s_controller, alpha1, alpha2, A_observer, C, L, A_controller, A_w, b_w, A_v, b_v)
 %SOLVE_MRPI_LINEAR_PROGRAM will take in a vector G_i, and return the vector
 %"s" which maximizes the dot-product with G_i.
 %
@@ -33,7 +33,7 @@ s = zeros(size(G_i));
 A_K_power = eye(numel(s));
 
 % Loop through 0 to s2-1, solving the linear programs:
-for iPower = 0:s2-1
+for iPower = 0:s_controller-1
    % vector for x_squiggle:
    x_squiggle_constraint_vector = C'*L'*A_K_power'*G_i;
     
@@ -41,13 +41,13 @@ for iPower = 0:s2-1
    v_constraint_vector = L'*A_K_power'*G_i;
    
    % solve these linear programs:
-   x_squiggle = solve_x_squiggle_linear_program(-x_squiggle_constraint_vector, s1, alpha1, A_L, L, A_w, b_w, A_v, b_v);
+   x_squiggle = solve_x_squiggle_linear_program(-x_squiggle_constraint_vector, s_observer, alpha1, A_observer, L, A_w, b_w, A_v, b_v);
    v = linprog(-v_constraint_vector, A_v, b_v, [], [], [], [], options);
    
    s = s + x_squiggle + v;
    
    % Up the power of A_K:
-   A_K_power = A_K_power * A_K;
+   A_K_power = A_K_power * A_controller;
    
 end
 
