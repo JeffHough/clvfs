@@ -1,4 +1,4 @@
-function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec_reduced, x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, d, A_cone, C_CB)
+function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, d, A_cone, C_CB)
 
     %% DESCRIPTION: 
     % this function produces the inequality matrix for the MPC solver.
@@ -36,7 +36,8 @@ function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec_reduced
     totalWidth = Np* (u_dim + x_dim);    
     totalHeight = Np * (u_height + x_height);
     
-    % First, check if we are including the last point or not:
+    % First, check if we are including the terminal set or not (may not be
+    % needed, is included in cost anyways).
     if isempty(Gf)
        P = zeros(totalHeight, totalWidth);
        z = zeros(totalHeight, 1);
@@ -70,10 +71,8 @@ function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec_reduced
        % Use the new constraint matrix to solve for the corresponding
        % reduced constraint vector:
        
-       
-       
        % Put the constraints together into a single vector:
-       M_vec = [u_con_vec_reduced;x_con_vec_reduced];
+       M_vec = [u_con_vec;x_con_vec];
        
        %  Get the ending indices:
        iHeightEnd = iHeight + (u_height + x_height - 1);
@@ -89,7 +88,7 @@ function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec_reduced
         
     end
     
-    if ~isempty(Gf)
+    if ~isempty(Gf) % Add in the terminal set for the inequality constraint:
         P(end-G_size(1) + 1:end, end-G_size(2) + 1:end) = Gf;
         z(end-G_size(1) + 1:end) = G_vec;
     end

@@ -37,23 +37,7 @@ sys = ss(A_c, B_c, C, D);
 sys_d = c2d(sys, FixedStep, 'zoh');
 
 A_d = sys_d.A;
-B_d = sys_d.B;
-
-%% CREATE SETS FOR THE DYNAMICS AND MEASUREMENT NOISE:
-
-% CREATE MATRIX AND VECTOR TO DESCRIBE THE MEASUREMENT NOISE SET:
-max_mes_noise = [0.005 ; 0.005 ; 0.005 ; 0.005 ; 0.005 ; 0.005];
-max_mes_constraint_vector = [max_mes_noise;max_mes_noise];
-
-% max tracking error matrix
-max_mes_constraint_matrix = [eye(6);-eye(6)];
-
-% CREATE MATRIX AND VECTOR TO DESCRIBE THE MEASUREMENT NOISE SET:
-max_dist_noise = 0.0005*ones(6,1); % NEED TO CHECK THIS LINE... IT IS PROBABLY NOT CORRECT.
-max_dist_constraint_vector = [max_dist_noise;max_dist_noise];
-
-% max tracking error matrix
-max_dist_constraint_matrix = [eye(6);-eye(6)];
+B_d = sys_d.B;s
 
 %% Select an LQR controller
 
@@ -72,65 +56,18 @@ Au = [eye(3);-eye(3)];
 u_max_scalar = 1; % [m/s^2]
 u_max = ones(6,1)*u_max_scalar;
 
-% Get the matrix for the linear program:
-premult_matrix = Au*K;
-
-
-%% Solving the mRPI state set:
-% ----------------- For the dynamics system ------------------
-alpha = 0.01; % The size of the disturbance that we will allow.
-
-% Get the dynamics system with the control gain:
-A_controlled = A_d + B_d*K;
-
-% Get the maximum eigen value (and its norm)
-eigs = eig(A_controlled);
-eigs_norms = abs(eigs);
-max_eig = max(eigs_norms);
-
-% solve for "s" - the multiple until the eigen value < alpha:
-s_control = ceil(log(alpha)/log(max_eig));
-
-% --------------- For the observer system --------------------
-L = 0.5*eye(6);
-A_observer = A_d - L*C;
-max_eig = max(abs(eig(A_observer)));
-
-% solve for "s" of the observer.
-s_observer = ceil(log(alpha)/log(max_eig));
-
-% What do we get if we try to solve for bu?:
-bu_reduction = zeros(size(u_max));
-for iRow = 1:size(premult_matrix,1)
-    
-    G_i = premult_matrix(iRow, :)';
-    
-    % DEFINITELY need to check the linear program solver below... seems
-    % off.
-    
-    something = solve_x_bar_linear_program(G_i, s_observer, s_control, 0.01, 0.01, A_observer, C, L, A_controlled,... 
-        max_dist_constraint_matrix, max_dist_constraint_vector, max_mes_constraint_matrix, max_mes_constraint_vector);
-    
-    % finally, below is the what the dot product is equal to!
-    bu_reduction(iRow) = something'*G_i;
-end
-
-u_max_reduced = u_max - bu_reduction;
-
-%% Now, we can get the inequality matrix, solve the mRPI, and then get the inequality vector (for the 
-% actual, not nominal system).
-
-% An initial x_con_matrix - just for size.
+%% Now, we can get the inequality matrix, solve the mRPI, and then get the inequality vector (for the actual, not nominal system)
+% An initial x_con_matrix - gets filled in at each time step.
 x_con_mat = zeros(10, 6);
 
 % The location of the docking port:
-d = [10 ; 0 ; 0];
+d = [3.0 ; 0 ; 0];
 
 % The matrix and vector describing the cone:
 [A_cone, b_cone] = return_square_cone(pi/6, d);
 
 % the radius of the target:
-rs = 10;
+rs = 3.0;
 
 % the maximum speed:
 v_max = [1;1;1];
