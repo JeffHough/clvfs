@@ -16,7 +16,7 @@ a = 7000; %km
 
 n = sqrt(MU/a^3);
 
-BL= [3*n^2      0       0;
+BL = [3*n^2      0       0;
      0          0       0;
      0          0    -n^2];
  
@@ -42,43 +42,38 @@ B_d = sys_d.B;
 %% CREATE SETS FOR THE DYNAMICS AND MEASUREMENT NOISE:
 
 % CREATE MATRIX AND VECTOR TO DESCRIBE THE MEASUREMENT NOISE SET:
-max_mes_noise = [0.1 ; 0.1 ; 0.1 ; 0.05 ; 0.05 ; 0.05];
+max_mes_noise = [0.005 ; 0.005 ; 0.005 ; 0.005 ; 0.005 ; 0.005];
 max_mes_constraint_vector = [max_mes_noise;max_mes_noise];
 
 % max tracking error matrix
 max_mes_constraint_matrix = [eye(6);-eye(6)];
 
 % CREATE MATRIX AND VECTOR TO DESCRIBE THE MEASUREMENT NOISE SET:
-max_dist_noise = [0.1 ; 0.1 ; 0.1];
+max_dist_noise = 0.0005*ones(6,1); % NEED TO CHECK THIS LINE... IT IS PROBABLY NOT CORRECT.
 max_dist_constraint_vector = [max_dist_noise;max_dist_noise];
 
 % max tracking error matrix
-max_dist_constraint_matrix = [eye(3);-eye(3)];
+max_dist_constraint_matrix = [eye(6);-eye(6)];
 
 %% Select an LQR controller
 
-R = 10*eye(3);
-Q = 10*eye(6);
+R = 100*eye(3);
+Q = diag([1, 1, 1, 1, 1, 1]);
 
 % Pick the Q and R matrices - solve the P and K matrix:
 [K, P, ~] = lqr(sys_d, Q, R);
+
+% We express solution the opposite way...
 K = -K;
 
-%% Tightening constraints on the INPUTS for the Nominal system (MPC):
+%% Describing the INPUT constraints.
 
 Au = [eye(3);-eye(3)];
 u_max_scalar = 1; % [m/s^2]
 u_max = ones(6,1)*u_max_scalar;
 
-% Now, need to solve the linear program:
-% FOR EACH ELEMENT OF b_u:
-% minimize -(Au*K)(iRow,:) * e
-
+% Get the matrix for the linear program:
 premult_matrix = Au*K;
-%bu = zeros(6,1);
-
-% solve for the reduced MPC constraint vector:
-%u_max_mpc = return_reduced_constraints(premult_matrix, error_constraint_matrix, error_constraint_vector, u_max);
 
 
 %% Solving the mRPI state set:
@@ -105,10 +100,25 @@ max_eig = max(abs(eig(A_observer)));
 s_observer = ceil(log(alpha)/log(max_eig));
 
 % What do we get if we try to solve for bu?:
-s = solve_x_bar_linear_program(premult_matrix, s_observer, s_control, 0.01, 0.01, A_observer, C, L, A_controlled,... 
-    max_dist_constraint_matrix, max_dist_constraint_vector, max_mes_constraint_matrix, max_mes_constraint_vector);
+bu_reduction = zeros(size(u_max));
+for iRow = 1:size(premult_matrix,1)
+    
+    G_i = premult_matrix(iRow, :)';
+    
+    % DEFINITELY need to check the linear program solver below... seems
+    % off.
+    
+    something = solve_x_bar_linear_program(G_i, s_observer, s_control, 0.01, 0.01, A_observer, C, L, A_controlled,... 
+        max_dist_constraint_matrix, max_dist_constraint_vector, max_mes_constraint_matrix, max_mes_constraint_vector);
+    
+    % finally, below is the what the dot product is equal to!
+    bu_reduction(iRow) = something'*G_i;
+end
 
-%% Now, we can get the inequality matrix, solve the mRPI, and then get the inequality vector.
+u_max_reduced = u_max - bu_reduction;
+
+%% Now, we can get the inequality matrix, solve the mRPI, and then get the inequality vector (for the 
+% actual, not nominal system).
 
 % An initial x_con_matrix - just for size.
 x_con_mat = zeros(10, 6);
@@ -129,10 +139,8 @@ v_max = [1;1;1];
 % CLVF)
 C_CB = C3(pi/8)*C1(pi/7);
 
-
-
-
-
+% The actual state-constraint vector:
+x_cons_vector = [-rs^2;v_max;v_max;b_cone];
 
 
 

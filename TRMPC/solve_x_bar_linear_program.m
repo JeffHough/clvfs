@@ -41,7 +41,9 @@ for iPower = 0:s_controller-1
    v_constraint_vector = L'*A_K_power'*G_i;
    
    % solve these linear programs:
-   x_squiggle = solve_x_squiggle_linear_program(-x_squiggle_constraint_vector, s_observer, alpha1, A_observer, L, A_w, b_w, A_v, b_v);
+   % NOTE the squiggle program ALREADY RETURNS a max... no need to flip
+   % sign.
+   x_squiggle = solve_x_squiggle_linear_program(x_squiggle_constraint_vector, s_observer, alpha1, A_observer, L, A_w, b_w, A_v, b_v);
    v = linprog(-v_constraint_vector, A_v, b_v, [], [], [], [], options);
    
    s = s + x_squiggle + v;
