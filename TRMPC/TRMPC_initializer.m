@@ -79,5 +79,8 @@ C_CB = C3(pi/8)*C1(pi/7);
 % The actual state-constraint vector:
 x_cons_vector = [-rs^2;v_max;v_max;b_cone];
 
+%% Build the warm-start matrix:
+
+
 
 

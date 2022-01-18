@@ -1,9 +1,15 @@
-function [C_BI_Np, omega_Np] = return_C_BI_from_axisym(mu_0, gamma_0, theta_0, t_vec, J_z, J_transverse, omega_z, omega_t)
+function [C_BI_Np, x_des_future] = return_C_BI_from_axisym(mu_0, gamma_0, theta_0, t_vec, J_z, J_transverse, omega_z, omega_t, d_B)
 
+    % Get the total number of steps forward that we are looking, according
+    % to the time-vector:
+    Np = numel(t_vec);
 
-    C_BI_Np = zeros(3,3,numel(t_vec));
-    omega_Np = zeros(3,1,numel(t_vec));
-
+    % Size all of the upcoming rotation matrices:
+    C_BI_Np = zeros(3, 3, Np);
+    
+    % Create a vector for the future desired docking position:
+    x_des_future = zeros(6*Np, 1);
+    
     % First, solve for captital omega:
     mu_dot = (J_transverse - J_z)/J_transverse * omega_z;
     
@@ -16,15 +22,32 @@ function [C_BI_Np, omega_Np] = return_C_BI_from_axisym(mu_0, gamma_0, theta_0, t
     mu_future = mu_0 * ONE + mu_dot*t_vec;
     theta_future = theta_0 * ONE + theta_dot * t_vec;
     
+    % initialize the height that we will fill for the upcoming states:
+    iHeightEnd = 0;
+    
     % solve for the upcoming matrices and angular velocities:
     for iTime = 1:numel(t_vec)
         this_mu = mu_future(iTime);
         this_theta = theta_future(iTime);
         
-       C_BI_Np(:,:,iTime) =  C3(this_mu)*C1(gamma_0)*C3(this_theta);
-       omega_Np = [theta_dot*sin(gamma_0)*sin(this_mu);
+       C_BI =  C3(this_mu)*C1(gamma_0)*C3(this_theta);
+       
+       C_BI_Np(:,:,iTime) = C_BI;
+       
+       omega    = [theta_dot*sin(gamma_0)*sin(this_mu);
                    theta_dot*sin(gamma_0)*cos(this_mu);
                    mu_dot + theta_dot*cos(gamma_0)];
+               
+       % Now, fill in the upcoming states:
+       iHeightStart = iHeightEnd + 1;
+       
+       position = C_BI'*d_B;
+       vel = C_BI' * (cross(omega, d_B));
+       
+       x_des_future(iHeightStart:iHeightStart+2) = position;
+       x_des_future(iHeightStart+3:iHeightStart+5) = vel;
+       
+       iHeightEnd = iHeightStart + 5;
        
     end
 

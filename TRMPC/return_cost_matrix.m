@@ -22,6 +22,4 @@ function [C] = return_cost_matrix(u_cost_mat, x_cost_mat, Np, Q_final)
     
     % replace just the last lower right corner:
     C(end-x_dim + 1 : end, end - x_dim + 1:end) = Q_final;
- 
 end
-

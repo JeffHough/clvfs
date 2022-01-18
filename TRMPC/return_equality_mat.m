@@ -1,4 +1,4 @@
-function [C, p] = return_equality_mat(A, B, Np)
+function [C] = return_equality_mat(A, B, Np)
 
     % First, get the dimension of A and B matrices:
     height_A = size(A, 1);
