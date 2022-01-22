@@ -1,4 +1,4 @@
-function [C, p] = return_equality_vec(A, Np, x0)
+function p = return_equality_vec(A, Np, x0)
 
     % First, get the dimension of A and B matrices:
     height_A = size(A, 1);

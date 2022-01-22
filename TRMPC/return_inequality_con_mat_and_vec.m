@@ -1,4 +1,4 @@
-function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, d, A_cone, C_CB)
+function [P, z] = return_inequality_con_mat_and_vec(x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, d, A_cone, C_CB)
 
     %% DESCRIPTION: 
     % this function produces the inequality matrix for the MPC solver.
@@ -25,11 +25,11 @@ function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_
     % z - the inequality vector.
      
     % Get the total size of the U and X vectors:
-    u_dim = size(u_con_mat, 2);
+    u_dim = 3; % shouldn't hard code this lol.
     x_dim = size(x_con_mat, 2);
     
     % Get the total "constraint height" for each vector:
-    u_height = size(u_con_mat, 1);
+    u_height = 0;
     x_height = size(x_con_mat, 1);
     
     % Preallocate size for the overall constraint matrix and vector:
@@ -49,8 +49,7 @@ function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_
     end
     
     % Create a single instance of the combined U and X constraint matrix:
-    M_mat = [u_con_mat, zeros(u_height, x_dim);
-             zeros(x_height, u_dim), x_con_mat];         
+    M_mat = [zeros(x_height, u_dim), x_con_mat];         
     % Loop through, filling in the values:
     iHeight = 1;
     iWidth = 1;
@@ -62,17 +61,15 @@ function [P, z] = return_inequality_con_mat_and_vec(u_con_mat, u_con_vec, x_con_
        C_BI = C_BI_Np(:,:,iMat);
        
        x_con_mat = [-(C_BI'*d)'       zeros(1,3);
-                   zeros(3)     eye(3);
-                   zeros(3)     -eye(3);
                    A_cone*C_CB*C_BI     zeros(size(A_cone))];
                
-       M_mat(end-x_dim:end,end-x_height:end) = x_con_mat;
+       M_mat(end-x_height+1:end,end-x_dim+1:end) = x_con_mat;
        
        % Use the new constraint matrix to solve for the corresponding
        % reduced constraint vector:
        
        % Put the constraints together into a single vector:
-       M_vec = [u_con_vec;x_con_vec];
+       M_vec = x_con_vec;
        
        %  Get the ending indices:
        iHeightEnd = iHeight + (u_height + x_height - 1);

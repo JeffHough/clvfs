@@ -8,7 +8,7 @@ function [C_BI_Np, x_des_future] = return_C_BI_from_axisym(mu_0, gamma_0, theta_
     C_BI_Np = zeros(3, 3, Np);
     
     % Create a vector for the future desired docking position:
-    x_des_future = zeros(6*Np, 1);
+    x_des_future = zeros(9*Np, 1);
     
     % First, solve for captital omega:
     mu_dot = (J_transverse - J_z)/J_transverse * omega_z;
@@ -44,10 +44,11 @@ function [C_BI_Np, x_des_future] = return_C_BI_from_axisym(mu_0, gamma_0, theta_
        position = C_BI'*d_B;
        vel = C_BI' * (cross(omega, d_B));
        
-       x_des_future(iHeightStart:iHeightStart+2) = position;
-       x_des_future(iHeightStart+3:iHeightStart+5) = vel;
+       x_des_future(iHeightStart:iHeightStart+2) = [0;0;0];
+       x_des_future(iHeightStart+3:iHeightStart+5) = position;
+       x_des_future(iHeightStart+6:iHeightStart+8) = vel;
        
-       iHeightEnd = iHeightStart + 5;
+       iHeightEnd = iHeightStart + 8;
        
     end
 
