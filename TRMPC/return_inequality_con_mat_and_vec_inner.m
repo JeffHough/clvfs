@@ -1,4 +1,4 @@
-function [P, z] = return_inequality_con_mat_and_vec(x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, d, A_cone, C_CB)
+function [P, z] = return_inequality_con_mat_and_vec_inner(x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, d, A_cone, C_CB)
 
     %% DESCRIPTION: 
     % this function produces the inequality matrix for the MPC solver.

@@ -16,6 +16,9 @@ freq_control = 20;
 % Set the step size of the simulation:
 FixedStep = 1/freq_control;
 
+% For now, leaving the control step the same as the dynamics step.
+ControlStep = FixedStep;
+
 % Set the simulation stop time:
 T = 1000;
 
@@ -24,9 +27,6 @@ Np = 2;
 
 % Create a time vector for future prediction:
 future_time_vector = (1:Np) * FixedStep;
-
-%% Build the warm-start matrix:
-warm_start_matrix = return_warm_start_matrix(9, Np);
 
 %% Hill's dynamics:
 
@@ -75,14 +75,6 @@ B_c = [zeros(3);eye(3)/m];
 C = eye(6);
 D = zeros(6,3);
 
-% Convert the continuous system into a discrete one:
-%sys = ss(A_c, B_c, C, D);
-%sys_d = c2d(sys, FixedStep, 'zoh');
-
-% % For now, lets put our own little test matrix here:
-% A_c = [0, 1;-4 -2*sqrt(2)];
-% B_c = [0;4];
-
 % Convert our own way:
 A_d = eye(size(A_c)) + (A_c*FixedStep) + (A_c*FixedStep)^2/2 + (A_c*FixedStep)^3/6 + (A_c*FixedStep)^4/24;
 B_d = A_c\(A_d - eye(size(A_c)))*B_c;
@@ -126,6 +118,7 @@ v_max = 1;
 % Choose some random rotation matrix for the cone (use this to get o_hat in
 % CLVF)
 C_CB = C3(pi/8)*C1(pi/7);
+o_hat_prime = C_CB' * [1;0;0];
 
 % The actual state-constraint vector:
 x_con_vec = [-rs^2;b_cone];
@@ -163,31 +156,39 @@ mu0 = 0;
 theta0 = 0;
 
 %% Some final dimensionality things:
-beq_size = Np*size(A_d, 1);
 
-% Get the total size of the U and X vectors:
-u_dim = 3; % hard-code here might be okay, but should take it out of simulink diagram...
-x_dim = size(x_con_mat, 2);
+% Size of total vector per step:
+dimPerStep = numel(u_ub) + numel(x_ub);
 
-% Get the total "constraint height" for each vector:
-u_height = size(u_con_mat, 1);
-x_height = size(x_con_mat, 1);
+% The total dimension of the X-vector:
+X_SIZE = (dimPerStep) * Np;
 
-% Preallocate size for the overall constraint matrix and vector:
-totalWidth = Np* (u_dim + x_dim);    
-totalHeight = Np * (u_height + x_height);
+% Total number of equality contraints:
+N_EQ = Np*size(A_d, 1);
 
-A_size = [totalHeight, totalWidth];
-b_size = totalHeight;
+% Number of inequality constraints on the inner MPC:
+N_INEQ_INNER = Np * (size(u_con_mat, 1) + size(x_con_mat, 1));
 
-X0 = zeros(size(Q,1),1);
+% Get the number of constraints in the outer (Just the plane constraint @ each step).
+N_INEQ_OUTER = Np;
+
+% Initial guess for the MPC
+X0 = zeros(X_SIZE,1);
+
+% Build the warm-start matrix:
+warm_start_matrix = return_warm_start_matrix(dimPerStep, Np);
 
 %% Set the tracking point for the outer MPC:
 % The outer radius of safety:
 r_safe = 10; 
 
 % The tracking point:
-trackingPoint = get_tracking_point(o_hat_prime, d, r_safe);
+tracking_point = get_tracking_point(o_hat_prime, d, r_safe);
+
+%% Setup the switching conditions:
+acceptableAngle = 0.05;
+acceptableDistance = 0.1;
+cntThreshold = 10;
 
 %% Set up the simulation, and run!
 set_param('tumblingExample','StopTime',num2str(T),'FixedStep',num2str(FixedStep));
