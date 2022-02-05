@@ -11,7 +11,7 @@ r2d = 1/d2r;
 %% Simulation meta-data:
 
 % control frequency in Hz:
-freq_control = 10;
+freq_control = 20;
 
 % Set the step size of the simulation:
 FixedStep = 1/freq_control;
@@ -76,11 +76,16 @@ C = eye(6);
 D = zeros(6,3);
 
 % Convert the continuous system into a discrete one:
-sys = ss(A_c, B_c, C, D);
-sys_d = c2d(sys, FixedStep, 'zoh');
+%sys = ss(A_c, B_c, C, D);
+%sys_d = c2d(sys, FixedStep, 'zoh');
 
-A_d = sys_d.A;
-B_d = sys_d.B;
+% % For now, lets put our own little test matrix here:
+% A_c = [0, 1;-4 -2*sqrt(2)];
+% B_c = [0;4];
+
+% Convert our own way:
+A_d = eye(size(A_c)) + (A_c*FixedStep) + (A_c*FixedStep)^2/2 + (A_c*FixedStep)^3/6 + (A_c*FixedStep)^4/24;
+B_d = A_c\(A_d - eye(size(A_c)))*B_c;
 
 %% Build the equality constraints (based on dynamics):
 Aeq = return_equality_mat(A_d, B_d, Np);
@@ -90,15 +95,12 @@ Aeq = return_equality_mat(A_d, B_d, Np);
 R = 100*eye(3);
 Q = diag([1, 1, 1, 1, 1, 1]);
 
-% Pick the Q and R matrices - solve the P and K matrix:
-[K, P, ~] = lqr(sys_d, Q, R);
-
-% We express solution the opposite way...
-K = -K;
+% Factor of extra weight for the final step:
+final_weight_factor = 100;
 
 
 %% Build the cost matrix (based on LQR gains):
-Q = return_cost_matrix(R, Q, Np, P);
+Q = return_cost_matrix(R, Q, Np, final_weight_factor*Q);
 
 %% Describing the INPUT constraints.
 % NOTE - this will now be incorperated as a LB-UB combo.
@@ -180,6 +182,12 @@ b_size = totalHeight;
 
 X0 = zeros(size(Q,1),1);
 
+%% Set the tracking point for the outer MPC:
+% The outer radius of safety:
+r_safe = 10; 
+
+% The tracking point:
+trackingPoint = get_tracking_point(o_hat_prime, d, r_safe);
 
 %% Set up the simulation, and run!
 set_param('tumblingExample','StopTime',num2str(T),'FixedStep',num2str(FixedStep));

@@ -20,10 +20,10 @@ pz = [0;0;1];
 mz = -pz;
 
 % Now, rotate these vectors by the correct half angles:
-py = math.R3(-ha) * py;
-my = math.R3(ha) * my;
-pz = math.R2(ha) * pz;
-mz = math.R2(-ha) * mz;
+py = R3(-ha) * py;
+my = R3(ha) * my;
+pz = R2(ha) * pz;
+mz = R2(-ha) * mz;
 
 % Now we can give the description of the cone as seen from the body frame:
 A_cone = [py' ; my' ; pz' ; mz'];
