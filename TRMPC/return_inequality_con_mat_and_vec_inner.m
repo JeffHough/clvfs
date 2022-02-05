@@ -1,4 +1,4 @@
-function [P, z] = return_inequality_con_mat_and_vec_inner(x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, d, A_cone, C_CB)
+function [P, z] = return_inequality_con_mat_and_vec_inner(u_con_mat, u_con_vec, x_con_mat, x_con_vec, Np, Gf, G_vec, C_BI_Np, A_cone, C_CB)
 
     %% DESCRIPTION: 
     % this function produces the inequality matrix for the MPC solver.
@@ -25,11 +25,11 @@ function [P, z] = return_inequality_con_mat_and_vec_inner(x_con_mat, x_con_vec, 
     % z - the inequality vector.
      
     % Get the total size of the U and X vectors:
-    u_dim = 3; % shouldn't hard code this lol.
+    u_dim = size(u_con_mat, 2); % shouldn't hard code this lol.
     x_dim = size(x_con_mat, 2);
     
     % Get the total "constraint height" for each vector:
-    u_height = 0;
+    u_height = size(u_con_mat, 1);
     x_height = size(x_con_mat, 1);
     
     % Preallocate size for the overall constraint matrix and vector:
@@ -60,8 +60,7 @@ function [P, z] = return_inequality_con_mat_and_vec_inner(x_con_mat, x_con_vec, 
        
        C_BI = C_BI_Np(:,:,iMat);
        
-       x_con_mat = [-(C_BI'*d)'       zeros(1,3);
-                   A_cone*C_CB*C_BI     zeros(size(A_cone))];
+       x_con_mat = [A_cone*C_CB*C_BI     zeros(size(A_cone))];
                
        M_mat(end-x_height+1:end,end-x_dim+1:end) = x_con_mat;
        
@@ -69,7 +68,7 @@ function [P, z] = return_inequality_con_mat_and_vec_inner(x_con_mat, x_con_vec, 
        % reduced constraint vector:
        
        % Put the constraints together into a single vector:
-       M_vec = x_con_vec;
+       M_vec = [u_con_vec;x_con_vec];
        
        %  Get the ending indices:
        iHeightEnd = iHeight + (u_height + x_height - 1);

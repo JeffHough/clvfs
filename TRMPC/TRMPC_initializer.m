@@ -76,8 +76,14 @@ C = eye(6);
 D = zeros(6,3);
 
 % Convert our own way:
-A_d = eye(size(A_c)) + (A_c*FixedStep) + (A_c*FixedStep)^2/2 + (A_c*FixedStep)^3/6 + (A_c*FixedStep)^4/24;
-B_d = A_c\(A_d - eye(size(A_c)))*B_c;
+%A_d = eye(size(A_c)) + (A_c*FixedStep) + (A_c*FixedStep)^2/2 + (A_c*FixedStep)^3/6 + (A_c*FixedStep)^4/24;
+%B_d = A_c\(A_d - eye(size(A_c)))*B_c;
+
+sys = ss(A_c, B_c, C, D);
+sys_d = c2d(sys, FixedStep);
+
+A_d = sys_d.A;
+B_d = sys_d.B;
 
 %% Build the equality constraints (based on dynamics):
 Aeq = return_equality_mat(A_d, B_d, Np);
@@ -101,16 +107,14 @@ u_max_scalar = 1; % [m/s^2]
 u_con_vec = [];
 
 %% Set up the state constraints:
-x_con_mat = zeros(5, 6);
+% Only a 4x6 for this one:
+x_con_mat = zeros(4, 6);
 
 % The location of the docking port:
 d = [3.0 ; 0 ; 0];
 
 % The matrix and vector describing the cone:
 [A_cone, b_cone] = return_square_cone(pi/6, d);
-
-% the radius of the target:
-rs = 3.0;
 
 % the maximum speed [NOTE - THIS WILL NOW BE INCORPERATED AS LB-UB COMBO]:
 v_max = 1;
@@ -121,7 +125,9 @@ C_CB = C3(pi/8)*C1(pi/7);
 o_hat_prime = C_CB' * [1;0;0];
 
 % The actual state-constraint vector:
-x_con_vec = [-rs^2;b_cone];
+x_con_vec = b_cone;
+
+
 
 %% Create the LB and UB vectors:
 % input and state lower bounds and upper bounds:
