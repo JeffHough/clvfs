@@ -31,6 +31,8 @@ showPath = 1;
 saveImages = 0;
 saveDataForAnalysis = 1;
 
+% Choose the 
+
 % Which plots to produce?
 plotAcc = 0;
 plotThetaR = 0;
@@ -48,23 +50,24 @@ SpacecraftStructure = getSpacecraftStructure();
                     
 
 %% SAFE DISTANCE OPTIONS:
-A_PRIME = [1, 5, 10, 20];
+%A_PRIME = [1, 5, 10, 20];
+A_PRIME = 10;
 
 %% MAX ACCELERATION OPTIONS:
 % A_MAX = [1.0, 2.0, 3.0, 4.0, 5.0]; % The maximum acceleration of your vehicle.
 A_MAX = [1, 3, 5];
 
 %% INITIAL CONDITIONS SETS:    
-
 % Options are from 0->6, with increasing intensity as we go.
-INITIALCONDITIONSET = [0, 2, 4, 6];
+%INITIALCONDITIONSET = [1, 3, 5, 7];
+INITIALCONDITIONSET = 1;
 
 %%  WEIGHT SETS: 
-
 % options are 1->7, where 7 penalizes fuel usage the MOST.
-selectWeightIndices = [1, 2, 3, 4, 5, 6, 7];
+% selectWeightIndices = [1, 2, 3, 4, 5, 6, 7];
+selectedWeightIndices = 1;
 
-% Return back the weights for the CLVF, LVF and MPC in structure format.
+% Return back the weights for the CLVF, LVF:
 WeightStructure = getWeightStructure(selectedWeightIndices);
 
 %% INITIAL CONDITIONS STRUCTURE
@@ -72,6 +75,9 @@ ICStructure = getICStructure();
 
 %% RESULTS STRUCTURE:
 ResultsStructure = getResultsStructure(A_PRIME, A_MAX, INITIALCONDITIONSET, WeightStructure);
+
+%% SETUP THE SWITCHING CONDITIONS:
+SwitchStructure = getSwichStructure();
 
 %% RUN THE SIMULATION:
 
@@ -253,12 +259,11 @@ for a_prime = A_PRIME
                     grid on
                     plot([0, simOut.t(end)], [a_max, a_max],'k--');
                     lgd = legend("Acceleration magnitude", "Acceleration limit");
-%                     lgd.Location = 'best';
                     xlabel("Time (s)");
                     ylabel("Acc. magnitude (m/s^2)");
                     ylim([0 a_max*1.1])
 
-%                     CREATE THE NEW AXES AND ZOOM-IN TO THE AREA OF INTEREST!
+                    % CREATE THE NEW AXES AND ZOOM-IN TO THE AREA OF INTEREST!
 
                     % create a new pair of axes inside current figure
                     if doZoomedIn
