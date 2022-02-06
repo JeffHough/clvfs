@@ -1,4 +1,4 @@
-function [A_cone, b_cone] = return_square_cone(ha, d)
+function [A_cone, b_cone] = return_square_cone(ha, d, C_CB)
 %% DESCRIPTION:
 % returns a square cone approximation.
 
@@ -12,6 +12,9 @@ function [A_cone, b_cone] = return_square_cone(ha, d)
 
 % v^T * (r - d) >= 0
 % v^T * r       >= v^T * d
+% -v^T * r <= -v^T * d
+
+% Ar <= (Ad)
 
 % Give four unit vectors (one for each side of the cone)
 py = [0;1;0];
@@ -26,9 +29,11 @@ pz = R2(ha) * pz;
 mz = R2(-ha) * mz;
 
 % Now we can give the description of the cone as seen from the body frame:
-A_cone = [py' ; my' ; pz' ; mz'];
-b_cone = A_cone * d;
+% Note, this also needs to be rotated into the body-frame, as that is where
+% the measurements will take place.
+A_cone = -[py' ; my' ; pz' ; mz'] * C_CB;
 
+b_cone = A_cone * d;
 
 end
 

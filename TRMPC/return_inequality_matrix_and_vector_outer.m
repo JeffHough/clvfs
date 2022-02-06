@@ -13,7 +13,7 @@ for iRow = 1:Np
     start_index = last_index + 1;
     
     A_out(iRow, start_index:start_index+2) = -r0';
-    b_out(iRow) = -(r_safe^2 + r0'*r0);
+    b_out(iRow) = -sqrt(r0'*r0)*r_safe;
     
     % Shift until the last 0:
     last_index = start_index + 8;

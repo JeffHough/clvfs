@@ -17,16 +17,17 @@ freq_control = 20;
 FixedStep = 1/freq_control;
 
 % For now, leaving the control step the same as the dynamics step.
-ControlStep = FixedStep;
+control_freq = 5;
+ControlStep = 1/control_freq;
 
 % Set the simulation stop time:
 T = 1000;
 
 % Pick the horizon for the MPC:
-Np = 2;
+Np = 15;
 
 % Create a time vector for future prediction:
-future_time_vector = (1:Np) * FixedStep;
+future_time_vector = (1:Np) * ControlStep;
 
 %% Hill's dynamics:
 
@@ -76,11 +77,11 @@ C = eye(6);
 D = zeros(6,3);
 
 % Convert our own way:
-%A_d = eye(size(A_c)) + (A_c*FixedStep) + (A_c*FixedStep)^2/2 + (A_c*FixedStep)^3/6 + (A_c*FixedStep)^4/24;
+%A_d = eye(size(A_c)) + (A_c*ControlStep) + (A_c*ControlStep)^2/2 + (A_c*ControlStep)^3/6 + (A_c*ControlStep)^4/24;
 %B_d = A_c\(A_d - eye(size(A_c)))*B_c;
 
 sys = ss(A_c, B_c, C, D);
-sys_d = c2d(sys, FixedStep);
+sys_d = c2d(sys, ControlStep);
 
 A_d = sys_d.A;
 B_d = sys_d.B;
@@ -90,8 +91,8 @@ Aeq = return_equality_mat(A_d, B_d, Np);
 
 %% Select an LQR controller
 
-R = 100*eye(3);
-Q = diag([1, 1, 1, 1, 1, 1]);
+R = 1*eye(3);
+Q = diag([1, 1, 1, 1, 1, 1])*100;
 
 % Factor of extra weight for the final step:
 final_weight_factor = 100;
@@ -112,22 +113,26 @@ x_con_mat = zeros(4, 6);
 
 % The location of the docking port:
 d = [3.0 ; 0 ; 0];
+d_hat = d./sqrt(sum(d.^2));
+
+% Choose some random rotation matrix for the cone (use this to get o_hat in
+% CLVF)
+C_CB = C3(pi/6);
+%C_CB = eye(3);
+o_hat_prime = C_CB' * d_hat;
 
 % The matrix and vector describing the cone:
-[A_cone, b_cone] = return_square_cone(pi/6, d);
+[A_cone, b_cone] = return_square_cone(pi/6, d,  C_CB);
+
+% Draw the cone to make sure.
+% [CONFIRMED] gives us the cone that we want.
+% draw_cone(A_cone, b_cone, [-6,15],[-20,20],[-20,20],1);
 
 % the maximum speed [NOTE - THIS WILL NOW BE INCORPERATED AS LB-UB COMBO]:
 v_max = 1;
 
-% Choose some random rotation matrix for the cone (use this to get o_hat in
-% CLVF)
-C_CB = C3(pi/8)*C1(pi/7);
-o_hat_prime = C_CB' * [1;0;0];
-
 % The actual state-constraint vector:
 x_con_vec = b_cone;
-
-
 
 %% Create the LB and UB vectors:
 % input and state lower bounds and upper bounds:
