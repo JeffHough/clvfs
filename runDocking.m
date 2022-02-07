@@ -71,13 +71,19 @@ selectedWeightIndices = 1;
 WeightStructure = getWeightStructure(selectedWeightIndices);
 
 %% INITIAL CONDITIONS STRUCTURE
-ICStructure = getICStructure();
+ICStructure = getICStructure(SpacecraftStructure.J_transverse, SpacecraftStructure.J_z, MU);
 
 %% RESULTS STRUCTURE:
-ResultsStructure = getResultsStructure(A_PRIME, A_MAX, INITIALCONDITIONSET, WeightStructure);
+ResultsStructure = getResultsStructure(...
+    A_PRIME, ...
+    A_MAX, ...
+    INITIALCONDITIONSET, ...
+    WeightStructure.W_CLVF_CELL, ...
+    WeightStructure.W_LVF_CELL...
+);
 
 %% SETUP THE SWITCHING CONDITIONS:
-SwitchStructure = getSwichStructure();
+SwitchStructure = getSwichStructure(timeStep);
 
 %% RUN THE SIMULATION:
 

@@ -1,4 +1,4 @@
-function SwitchStructure = getSwichStructure()
+function SwitchStructure = getSwichStructure(timeStep)
 
     d2r = pi/180;
 
@@ -8,6 +8,6 @@ function SwitchStructure = getSwichStructure()
     SwitchStructure.acceptableDistance = 0.05; % 5 cm
 
     SwitchStructure.timeThreshold = 5; % 5 seconds staying in the radius
-    SwitchStructure.cntThreshold = timeThreshold/timeStep;
+    SwitchStructure.cntThreshold = SwitchStructure.timeThreshold/timeStep;
 
 end
