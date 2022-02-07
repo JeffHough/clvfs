@@ -116,10 +116,10 @@ for a_prime = A_PRIME
                 
                 % Display progress:
                 runCnt = runCnt+1;
-                disp("On " + num2str(runCnt) + " of " + num2str(totalNumber));
+                disp("On " + num2str(runCnt) + " of " + num2str(ResultsStructure.totalNumber));
 
-                RC_I0 = rC_I0 + RT_I0;
-                VC_I0 = vC_I0 + VT_I0;
+                RC_I0 = ICStructure.rC_I0{initialConditionSet} + ICStructure.RT_I0;
+                VC_I0 = ICStructure.vC_I0{initialConditionSet} + ICStructure.VT_I0;
 
                 % Convert into meters...
                 rC_T0 = rC_I0*10^3;
