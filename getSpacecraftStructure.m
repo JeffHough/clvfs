@@ -6,8 +6,6 @@ d2r = pi/180;
 % NOTE: THESE FIRST CHARACTERISTICS ARE FOR THE TARGET:
 
 % PARAMETERS OF THE SETUP (NOT RELATED TO CLVF OR LVF DESIGN).   
-SpacecraftStructure.o_prime = [1;0;0];
-SpacecraftStructure.o_hat_prime = SpacecraftStructure.o_prime./sqrt(sum(SpacecraftStructure.o_prime.^2));
 SpacecraftStructure.theta_d = 30*d2r;
 SpacecraftStructure.d = [6;3;0]; % Might change later if it looks dumb.
 SpacecraftStructure.dNorm = sqrt(sum(SpacecraftStructure.d.^2));
@@ -28,6 +26,19 @@ SpacecraftStructure.m = 10;
 % THESE CHARACTERISTICS ARE FOR IF THE TARGET SPACECRAFT IS AXI-SYMETRIC:
 SpacecraftStructure.J_transverse = 2;
 SpacecraftStructure.J_z = 5;
+
+% USING THE SQUARE CONE CONSTRAINT:
+% Pick a random rotation for the o_hat_prime vector:
+SpacecraftStructure.C_CB = C2(pi/8) * C3(-pi/7);
+
+% Get o_hat_prime as this rotation from x:
+SpacecraftStructure.o_hat_prime = SpacecraftStructure.C_CB' * [1;0;0];
+
+[SpacecraftStructure.A_cone, SpacecraftStructure.b_cone] = return_square_cone(...
+    SpacecraftStructure.theta_d, ...
+    SpacecraftStructure.d, ...
+    SpacecraftStructure.C_CB ...
+);
 
 end
 

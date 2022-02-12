@@ -1,7 +1,13 @@
-function [ICStructure] = getICStructure(J_transverse, J_z, MU)
+function [ICStructure] = getICStructure(SpacecraftStructure, MU, ControlStep)
 
     % Conversion from degrees to radians:
     d2r = pi/180;
+    
+    % Get the spacecraft data:
+    J_z = SpacecraftStructure.J_z;
+    J_transverse = SpacecraftStructure.J_transverse;
+    m = SpacecraftStructure.m;
+    
 
     % Set up the target orbit:
     ICStructure.OE.semiMajorAxis = 7500;
@@ -21,6 +27,31 @@ function [ICStructure] = getICStructure(J_transverse, J_z, MU)
         ICStructure.OE.trueAnomaly, ...
         MU...
     );
+
+    % ALSO NEED TO GET THE DISCRETIZED SYSTEM DYNAMICS HERE FOR THE MPC:
+    n = sqrt(MU/ICStructure.OE.semiMajorAxis^3);
+
+    BL = [3*n^2      0       0;
+         0          0       0;
+         0          0    -n^2];
+
+    BR = [0         2*n     0;
+          -2*n      0       0;
+          0         0       0];
+
+    A_c = [zeros(3), eye(3);
+          BL        BR    ];
+
+    B_c = [zeros(3);eye(3)/m];
+
+    ICStructure.C = eye(6);
+    ICStructure.D = zeros(6,3);
+
+    sys = ss(A_c, B_c, ICStructure.C, ICStructure.D);
+    sys_d = c2d(sys, ControlStep);
+
+    ICStructure.A_d = sys_d.A;
+    ICStructure.B_d = sys_d.B;
 
     % Declare the different initial condition options:
     ICStructure.rC_I0 = {};

@@ -17,6 +17,10 @@ J2 = -1.08264*10^-3;
 % Length of the simulation (if required.)
 T = 50000; 
 
+% Control Frequency:
+ControlFrequency = 10;
+ControlStep = 1/ControlFrequency;
+
 % Timestep of the simulation.
 timeStep = 0.05; 
 
@@ -47,10 +51,13 @@ analysisSaveName = 'alteringAlphaPrime';
 % Only put this code into a function for smaller setup script +
 % namespacing.
 SpacecraftStructure = getSpacecraftStructure(); 
-                    
+
+% Perhaps need to add in one other inequality constraint... don't wanna
+% though :(
+v_max_MPC = 1;
 
 %% SAFE DISTANCE OPTIONS:
-%A_PRIME = [1, 5, 10, 20];
+%A_PRIME = [1, 5, 10, 20];  
 A_PRIME = 10;
 
 %% MAX ACCELERATION OPTIONS:
@@ -71,7 +78,7 @@ selectedWeightIndices = 1;
 WeightStructure = getWeightStructure(selectedWeightIndices);
 
 %% INITIAL CONDITIONS STRUCTURE
-ICStructure = getICStructure(SpacecraftStructure.J_transverse, SpacecraftStructure.J_z, MU);
+ICStructure = getICStructure(SpacecraftStructure, MU, ControlStep);
 
 %% RESULTS STRUCTURE:
 ResultsStructure = getResultsStructure(...
@@ -89,6 +96,15 @@ SwitchStructure = getSwichStructure(timeStep);
 
 % Store which run we are on:
 runCnt = 0;
+
+%% Get the control structure:
+ControlStructure = getControlStructure();
+
+%% SETUP MY NICE FIGURES:
+figure
+plot(0,0)
+pdfprep();
+close(gcf);
    
 for a_prime = A_PRIME
     for a_max = A_MAX
@@ -108,6 +124,13 @@ for a_prime = A_PRIME
                 
             for weightNumber = 1:numel(WeightStructure.W_CLVF_CELL)
                 
+                % Set the save name for this run:
+                thisCaseSaveName = getCaseSaveName(a_max, initialConditionSet, weightNumber, a_prime);
+                
+                %% Pick the LVF and CLVF Weights:
+                W_LVF = WeightStructure.W_LVF_CELL{weightNumber};
+                W_CLVF = WeightStructure.W_CLVF_CELL{weightNumber};
+                
                 % Pick arbitrarily - since usually I don't want to close
                 % figures for only a small number of runs.
                 if ResultsStructure.totalNumber > 10
@@ -122,12 +145,8 @@ for a_prime = A_PRIME
                 VC_I0 = ICStructure.vC_I0{initialConditionSet} + ICStructure.VT_I0;
 
                 % Convert into meters...
-                rC_T0 = rC_I0*10^3;
-                vC_T0 = vC_I0*10^3;
-
-
-                kd = 5.0; % P gain for the controller.
-
+                rC_T0 = ICStructure.rC_I0{initialConditionSet}*10^3;
+                vC_T0 = ICStructure.vC_I0{initialConditionSet}*10^3;
 
                 %% LVF DESIGN PROCEDURE
 
@@ -154,7 +173,23 @@ for a_prime = A_PRIME
                 gamma = 0.2; % My damping factor
                 beta = 0.1; % My reduction factor.
 
-                v_max = interiorPointLVF_heur(a_prime, v_max, a_max, w_max, rotNorm, dockingPortNorm, theta_d, fact, W_LVF, mu, tol, gamma, beta, muFact, muLimit);
+                v_max = interiorPointLVF_heur(...
+                    a_prime, ...
+                    v_max, ...
+                    a_max, ...
+                    w_max, ...
+                    rotNorm, ...
+                    dockingPortNorm, ...
+                    SpacecraftStructure.theta_d, ...
+                    fact, ...
+                    W_LVF, ...
+                    mu, ...
+                    tol, ...
+                    gamma, ...
+                    beta, ...
+                    muFact, ...
+                    muLimit...
+                );
 
                 % What were our estimates???
                 T_est_LVF = T_heur_LVF(a_prime,finalAngle,v_max);
@@ -164,7 +199,7 @@ for a_prime = A_PRIME
                 %% CLVF DESIGN PROCEDURE
                 % PERFORMING THE DESIGN PROCEDURE OF THE THREE GAINS TO SELECT:
 
-                aTimesOVec = d + a_prime*o_hat_prime; % All in the body-fixed frame.
+                aTimesOVec = SpacecraftStructure.d + a_prime*SpacecraftStructure.o_hat_prime; % All in the body-fixed frame.
                 a = sqrt(sum(aTimesOVec.^2));
                 o_hat_B = aTimesOVec./a;
 
@@ -181,7 +216,24 @@ for a_prime = A_PRIME
                 muLimit = 1000;
                 muFact = 10.0;
 
-                [b, kc, ka] = interiorPointCLVF_heur(b, kc, ka, a, a_max, w_max, rotNorm, rC_T0 , vC_T0, W_CLVF, mu, tol, gamma, beta, muFact, muLimit);
+                [b, kc, ka] = interiorPointCLVF_heur(...
+                    b, ...
+                    kc, ...
+                    ka, ...
+                    a, ...
+                    a_max,... 
+                    w_max, ...
+                    rotNorm, ...
+                    rC_T0, ...
+                    vC_T0, ...
+                    W_CLVF, ...
+                    mu, ...
+                    tol, ...
+                    gamma, ...
+                    beta, ...
+                    muFact, ...
+                    muLimit...
+                );
 
 
                 % What were our estimates???
@@ -198,6 +250,21 @@ for a_prime = A_PRIME
                 disp(T_est_LVF);
                 disp("LVF deltaV estimate:")
                 disp(F_est_LVF);
+                
+                %% DESIGN THE MPC:
+                Q = eye(6) * W_CLVF(1);
+                Q_final = 100 * Q;
+                R = eye(3) * W_CLVF(2);
+                
+                MPCStructure = getMPCStructure(...
+                    ICStructure, ...
+                    SpacecraftStructure,... 
+                    R, ...
+                    Q, ...
+                    Q_final,... 
+                    a_max,... 
+                    v_max_MPC...
+                );
 
 
                 %% RUN THE SIMULATION
@@ -205,12 +272,6 @@ for a_prime = A_PRIME
                 % See if the simulation will run now:
                 set_param('tumblingExample','StopTime',num2str(T),'FixedStep',num2str(timeStep));
                 simOut = sim("tumblingExample");
-
-                %% SETUP MY NICE FIGURES:
-                figure
-                plot(0,0)
-                pdfprep();
-                close(gcf);
 
                 %% SAVE DATA FROM THIS RUN:  
 
@@ -281,9 +342,6 @@ for a_prime = A_PRIME
                         plot(simOut.t(indexOfInterest),simOut.a_norm(indexOfInterest)) % plot on new axes
                         plot([lowerInterestingTValue higherInterestingTValue],[a_max a_max],'k--')
                     end
-
-                    % Set the save name for this run:
-                    thisCaseSaveName = getCaseSaveName(a_max, initialConditionSet, weightNumber, a_prime);
 
                     if saveImages == 1
 
@@ -423,8 +481,8 @@ for a_prime = A_PRIME
                 View = [45,45];
 
                 % Find the first index where we are within 10 cm:
-                minInd = find(simOut.r<=animationBoxSize, 1);
-                maxInd = find(simOut.r<=0.1,1);
+                minInd = find(simOut.r_prime<=animationBoxSize, 1);
+                maxInd = find(simOut.r_prime<=0.1,1);
 
                 interestingTimeIndices = floor(linspace(minInd, maxInd,8));
                 saveName = thisCaseSaveName + "t";
