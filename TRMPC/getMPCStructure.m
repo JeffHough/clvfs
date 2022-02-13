@@ -1,11 +1,45 @@
-function MPCStructure = getMPCStructure(ICStructure, SpacecraftStructure, R, Q, Q_final, u_max_scalar, v_max)
+function MPCStructure = getMPCStructure(ICStructure, SpacecraftStructure, R, Q, Q_final, u_max_scalar, v_max, MU)
 
-A_d = ICStructure.A_d;
-B_d = ICStructure.B_d;
+% CHOOSE THE STEP HORIZON:
+Np = 5;
+MPCStructure.Np = Np;
+
+% CHOOSE THE CONTROL STEP:
+ControlFrequency = 2;
+MPCStructure.ControlStep = 1/ControlFrequency;
+
+% Now, get the future_time_vector:
+MPCStructure.future_time_vector = (1:Np) * MPCStructure.ControlStep;
+
+% ALSO NEED TO GET THE DISCRETIZED SYSTEM DYNAMICS HERE FOR THE MPC:
+n = sqrt(MU/ICStructure.OE.semiMajorAxis^3);
+
+BL = [3*n^2      0       0;
+     0          0       0;
+     0          0    -n^2];
+
+BR = [0         2*n     0;
+      -2*n      0       0;
+      0         0       0];
+
+A_c = [zeros(3), eye(3);
+      BL        BR    ];
+
+B_c = [zeros(3);eye(3)/SpacecraftStructure.m];
+
+ICStructure.C = eye(6);
+ICStructure.D = zeros(6,3);
+
+sys = ss(A_c, B_c, ICStructure.C, ICStructure.D);
+sys_d = c2d(sys, MPCStructure.ControlStep);
+
+A_d = sys_d.A;
+B_d = sys_d.B;
 b_cone = SpacecraftStructure.b_cone;
 
-% CHOOSE THE TIME HORIZON:
-Np = 10;
+% Store into the MPC structure.
+MPCStructure.A_d = A_d;
+MPCStructure.B_d = B_d;
 
 % GET THE EQUALITY MATRIX:
 MPCStructure.Aeq = return_equality_mat(A_d, B_d, Np);
