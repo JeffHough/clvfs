@@ -248,9 +248,11 @@ for a_prime = A_PRIME
                 disp(F_est_LVF);
                 
                 %% DESIGN THE MPC:
-                Q = eye(6) * W_CLVF(1);
+                %Q = eye(6) * W_CLVF(1);
+                Q = eye(6) * 100;
                 Q_final = 100 * Q;
-                R = eye(3) * W_CLVF(2);
+                R = eye(3);
+                %R = eye(3) * W_CLVF(2);
                 
                 MPCStructure = getMPCStructure(...
                     ICStructure, ...
