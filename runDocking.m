@@ -15,7 +15,7 @@ J2 = -1.08264*10^-3;
 % SOME BASIC SIMULATION PARAMETERS:
 
 % Length of the simulation (if required.)
-T = 50000; 
+T = 5000; 
 
 % Timestep of the simulation.
 timeStep = 0.05; 
@@ -249,7 +249,7 @@ for a_prime = A_PRIME
                 
                 %% DESIGN THE MPC:
                 %Q = eye(6) * W_CLVF(1);
-                Q = eye(6) * 100;
+                Q = eye(6) * 10000;
                 Q_final = 100 * Q;
                 R = eye(3);
                 %R = eye(3) * W_CLVF(2);
@@ -260,9 +260,10 @@ for a_prime = A_PRIME
                     R, ...
                     Q, ...
                     Q_final,... 
-                    a_max,... 
+                    a_max * SpacecraftStructure.m,... 
                     v_max_MPC,...
-                    MU ...
+                    MU, ...
+                    aTimesOVec...
                 );
 
 

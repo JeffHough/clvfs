@@ -1,11 +1,11 @@
-function MPCStructure = getMPCStructure(ICStructure, SpacecraftStructure, R, Q, Q_final, u_max_scalar, v_max, MU)
+function MPCStructure = getMPCStructure(ICStructure, SpacecraftStructure, R, Q, Q_final, u_max_scalar, v_max, MU, tracking_point)
 
 % CHOOSE THE STEP HORIZON:
-Np = 5;
+Np = 10;
 MPCStructure.Np = Np;
 
 % CHOOSE THE CONTROL STEP:
-ControlFrequency = 2;
+ControlFrequency = 5;
 MPCStructure.ControlStep = 1/ControlFrequency;
 
 % Now, get the future_time_vector:
@@ -95,5 +95,8 @@ MPCStructure.X0 = zeros(MPCStructure.X_SIZE,1);
 
 % Build the warm-start matrix:
 MPCStructure.warm_start_matrix = return_warm_start_matrix(dimPerStep, Np);
+
+%% MAKE THE TRACKING POINT SLIGHTLY FURTHER OUT (TO HELP WITH THE PLANE CONSTRAINT):
+MPCStructure.tracking_point = 1.1*tracking_point;
 
 end

@@ -45,7 +45,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.CT_BI0{1} = eye(3,3);
     ICStructure.wT_B0{1} = [0.2;0.05;-0.45] * d2r;
     ICStructure.gamma{1} = 30*pi/180;
-    ICStructure.w_t{1} = 5 * d2r;
+    ICStructure.w_t{1} = 0 * d2r;
     ICStructure.mu0{1} = 0;
     ICStructure.theta0{1} = 0;
 
@@ -54,7 +54,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.CT_BI0{2} = eye(3,3);
     ICStructure.wT_B0{2} = [-1.4;1.0;2.0] * d2r; 
     ICStructure.gamma{2} = 30*pi/180;
-    ICStructure.w_t{2} = 5 * d2r;
+    ICStructure.w_t{2} = 2 * d2r;
     ICStructure.mu0{2} = 0;
     ICStructure.theta0{2} = 0;
 
@@ -63,7 +63,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.CT_BI0{3} = eye(3,3);
     ICStructure.wT_B0{3} = [-0.2; 0.8; 3.1]* d2r;
     ICStructure.gamma{3} = 30*pi/180;
-    ICStructure.w_t{3} = 5 * d2r;
+    ICStructure.w_t{3} = 4 * d2r;
     ICStructure.mu0{3} = 0;
     ICStructure.theta0{3} = 0;
 
@@ -72,7 +72,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.CT_BI0{4} = eye(3,3);
     ICStructure.wT_B0{4} = [-1.4;1.0;4.0]* d2r;
     ICStructure.gamma{4} = 30*pi/180;
-    ICStructure.w_t{4} = 5 * d2r;
+    ICStructure.w_t{4} = 6 * d2r;
     ICStructure.mu0{4} = 0;
     ICStructure.theta0{4} = 0;
 
@@ -81,7 +81,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.CT_BI0{5} = eye(3,3);
     ICStructure.wT_B0{5} = [1.0;-1.4;5.0] * d2r;
     ICStructure.gamma{5} = 30*pi/180;
-    ICStructure.w_t{5} = 5 * d2r;
+    ICStructure.w_t{5} = 8 * d2r;
     ICStructure.mu0{5} = 0;
     ICStructure.theta0{5} = 0;
 
@@ -90,7 +90,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.CT_BI0{6} = eye(3,3);
     ICStructure.wT_B0{6} = [1.0;-3.4;7.0] * d2r;
     ICStructure.gamma{6} = 30*pi/180;
-    ICStructure.w_t{6} = 5 * d2r;
+    ICStructure.w_t{6} = 10 * d2r;
     ICStructure.mu0{6} = 0;
     ICStructure.theta0{6} = 0;
 
@@ -99,7 +99,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.CT_BI0{7} = eye(3,3);
     ICStructure.wT_B0{7} = [1.0;-2.4;10.0] * d2r;
     ICStructure.gamma{7} = 30*pi/180;
-    ICStructure.w_t{7} = 5 * d2r;
+    ICStructure.w_t{7} = 12 * d2r;
     ICStructure.mu0{7} = 0;
     ICStructure.theta0{7} = 0;
 
