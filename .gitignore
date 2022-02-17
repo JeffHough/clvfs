@@ -45,3 +45,5 @@ slprj
 Figures
 clvfs
 *.asv
+*.autosave
+old

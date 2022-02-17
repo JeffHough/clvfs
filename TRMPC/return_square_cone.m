@@ -10,11 +10,11 @@ function [A_cone, b_cone] = return_square_cone(ha, d, C_CB)
 % A_cone - a matrix describing the "cone" in the body-fixed frame.
 % b_cone - the cone inequality matrix:
 
-% v^T * (r - d) >= 0
-% v^T * r       >= v^T * d
-% -v^T * r <= -v^T * d
+% v_B^T * (r_B - d_B) >= 0
+% v_B^T * r_B       >= v_B^T * d_B
+% -v_C^T * C_CB * r_B <= -v_C^T * C_CB * d_B
 
-% Ar <= (Ad)
+% A * C_BI* r_I <= A * d_B
 
 % Give four unit vectors (one for each side of the cone)
 py = [0;1;0];
@@ -31,7 +31,10 @@ mz = R2(-ha) * mz;
 % Now we can give the description of the cone as seen from the body frame:
 % Note, this also needs to be rotated into the body-frame, as that is where
 % the measurements will take place.
-A_cone = -[py' ; my' ; pz' ; mz'] * C_CB;
+A_cone = -[py' ; 
+           my' ; 
+           pz' ; 
+           mz'] * C_CB;
 
 b_cone = A_cone * d;
 

@@ -29,27 +29,28 @@ function [P, z] = return_inequality_con_mat_and_vec_inner(u_con_mat, u_con_vec, 
     x_dim = size(x_con_mat, 2);
     
     % Get the total "constraint height" for each vector:
-    u_height = size(u_con_mat, 1);
-    x_height = size(x_con_mat, 1);
+    n_u_consts = size(u_con_mat, 1);
+    n_x_consts = size(x_con_mat, 1);
     
     % Preallocate size for the overall constraint matrix and vector:
-    totalWidth = Np* (u_dim + x_dim);    
-    totalHeight = Np * (u_height + x_height);
+    X_SIZE = Np* (u_dim + x_dim);    
+    N_CONSTRAINTS = Np * (n_u_consts + n_x_consts);
+    
+    % Create the M_Vec:
+    M_vec = [u_con_vec;x_con_vec];
     
     % First, check if we are including the terminal set or not (may not be
     % needed, is included in cost anyways).
     if isempty(Gf)
-       P = zeros(totalHeight, totalWidth);
-       z = zeros(totalHeight, 1);
+       P = zeros(N_CONSTRAINTS, X_SIZE);
+       z = zeros(N_CONSTRAINTS, 1);
     else
-        G_size = size(Gf);
-        
-        P = zeros(totalHeight + G_size(1), totalWidth);
-        z = zeros(totalHeight + G_size(1), 1);
+        G_size = size(Gf);  
+        P = zeros(N_CONSTRAINTS + G_size(1), X_SIZE);
+        z = zeros(N_CONSTRAINTS + G_size(1), 1);
     end
     
     % Create a single instance of the combined U and X constraint matrix:
-    M_mat = [zeros(x_height, u_dim), x_con_mat];         
     % Loop through, filling in the values:
     iHeight = 1;
     iWidth = 1;
@@ -57,21 +58,12 @@ function [P, z] = return_inequality_con_mat_and_vec_inner(u_con_mat, u_con_vec, 
     for iMat = 1:Np
        % RECREATE THE X_CON MATRIX... NEEDS INPUTS FROM THE UPCOMING
        % ATTITUDE OF THE SPACECRAFT.
-       
        C_BI = C_BI_Np(:,:,iMat);
-       
        x_con_mat = [A_cone*C_BI     zeros(size(A_cone))];
-               
-       M_mat(end-x_height+1:end,end-x_dim+1:end) = x_con_mat;
-       
-       % Use the new constraint matrix to solve for the corresponding
-       % reduced constraint vector:
-       
-       % Put the constraints together into a single vector:
-       M_vec = [u_con_vec;x_con_vec];
+       M_mat = [zeros(n_x_consts, u_dim), x_con_mat];         
        
        %  Get the ending indices:
-       iHeightEnd = iHeight + (u_height + x_height - 1);
+       iHeightEnd = iHeight + (n_u_consts + n_x_consts - 1);
        iWidthEnd = iWidth + (u_dim + x_dim - 1);
        
        % Fill in the matrix and the vector:
@@ -81,7 +73,6 @@ function [P, z] = return_inequality_con_mat_and_vec_inner(u_con_mat, u_con_vec, 
        % Increment:
        iHeight = iHeightEnd + 1;
        iWidth = iWidthEnd + 1;
-        
     end
     
     if ~isempty(Gf) % Add in the terminal set for the inequality constraint:
