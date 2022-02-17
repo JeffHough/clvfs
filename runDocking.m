@@ -1,9 +1,5 @@
-% THIS SCRIPT IS MEANT FOR RUNNING A UAV EXAMPLE FOR THE CASCADED LYAPUNOV
-% VECTOR FIELD.
-
+%% THIS SCRIPT IS MEANT FOR RUNNING A CLVF/LVF DOCKING APPROACH, AND COMPARING TO MPC.
 clear
-clc
-
 d2r = pi/180;
 r2d = 1/d2r;
 
@@ -20,6 +16,7 @@ T = 5000;
 % Timestep of the simulation.
 timeStep = 0.05; 
 
+%% PARAMETERS FOR SIMULATION OUTPUTS:
 animateScenario = 1;
 doTimeLapse = 0;
 
@@ -30,8 +27,6 @@ doZoomedIn = 0;
 showPath = 1; 
 saveImages = 0;
 saveDataForAnalysis = 1;
-
-% Choose the 
 
 % Which plots to produce?
 plotAcc = 0;
@@ -58,17 +53,17 @@ A_PRIME = 10;
 
 %% MAX ACCELERATION OPTIONS:
 % A_MAX = [1.0, 2.0, 3.0, 4.0, 5.0]; % The maximum acceleration of your vehicle.
-A_MAX = [1, 3, 5];
+A_MAX = [2];
 
 %% INITIAL CONDITIONS SETS:    
 % Options are from 0->6, with increasing intensity as we go.
 %INITIALCONDITIONSET = [1, 3, 5, 7];
-INITIALCONDITIONSET = 1;
+INITIALCONDITIONSET = [2];
 
 %%  WEIGHT SETS: 
 % options are 1->7, where 7 penalizes fuel usage the MOST.
 % selectWeightIndices = [1, 2, 3, 4, 5, 6, 7];
-selectedWeightIndices = 1;
+selectedWeightIndices = 5;
 
 % Return back the weights for the CLVF, LVF:
 WeightStructure = getWeightStructure(selectedWeightIndices);
@@ -89,7 +84,6 @@ ResultsStructure = getResultsStructure(...
 SwitchStructure = getSwichStructure(timeStep);
 
 %% RUN THE SIMULATION:
-
 % Store which run we are on:
 runCnt = 0;
 
@@ -105,7 +99,6 @@ close(gcf);
 for a_prime = A_PRIME
     for a_max = A_MAX
         for initialConditionSet = INITIALCONDITIONSET
-            
         %% RUN OBSERVATION PHASE:
         % N1 : dockingNorm.
         % N2 : rotNorm.
@@ -119,7 +112,6 @@ for a_prime = A_PRIME
         w_max = max(allNorms.NORMS(:,3));
                 
             for weightNumber = 1:numel(WeightStructure.W_CLVF_CELL)
-                
                 % Set the save name for this run:
                 thisCaseSaveName = getCaseSaveName(a_max, initialConditionSet, weightNumber, a_prime);
                 
@@ -145,12 +137,9 @@ for a_prime = A_PRIME
                 vC_T0 = ICStructure.vC_I0{initialConditionSet}*10^3;
 
                 %% LVF DESIGN PROCEDURE
-
                 % BELOW IS HOW THE VARIABLES ARE ENCODED INTO THE MAX-ACCEL FUNCTION:
-
                 %     v_max = params(1);
                 %     a_prime = params(2);
-                %     
                 %     w_max = rotStuff(1);
                 %     theta_d = rotStuff(2);
                 %     d = [rotStuff(3);rotStuff(4);rotStuff(5)];
@@ -191,11 +180,10 @@ for a_prime = A_PRIME
                 T_est_LVF = T_heur_LVF(a_prime,finalAngle,v_max);
                 F_est_LVF = F_heur_LVF(a_prime,dockingPortNorm,finalAngle,v_max,rotNorm,w_max);
 
-
                 %% CLVF DESIGN PROCEDURE
                 % PERFORMING THE DESIGN PROCEDURE OF THE THREE GAINS TO SELECT:
 
-                aTimesOVec = SpacecraftStructure.d + a_prime*SpacecraftStructure.o_hat_prime; % All in the body-fixed frame.
+                aTimesOVec = SpacecraftStructure.d + a_prime*SpacecraftStructure.o_hat_prime;
                 a = sqrt(sum(aTimesOVec.^2));
                 o_hat_B = aTimesOVec./a;
 
@@ -231,11 +219,9 @@ for a_prime = A_PRIME
                     muLimit...
                 );
 
-
                 % What were our estimates???
                 T_est = T_heur(a,b,ka,kc,rC_T0);
                 F_est = F_heur(a,b,ka,kc,rC_T0,vC_T0,rotNorm,w_max);
-
 
                 disp("T estimate is:")
                 disp(T_est);
@@ -266,15 +252,14 @@ for a_prime = A_PRIME
                     aTimesOVec...
                 );
 
-
                 %% RUN THE SIMULATION
-
                 % See if the simulation will run now:
                 set_param('tumblingExample','StopTime',num2str(T),'FixedStep',num2str(timeStep));
+                tic;
                 simOut = sim("tumblingExample");
-
-                %% SAVE DATA FROM THIS RUN:  
-
+                disp("Simulation time in seconds: " + num2str(toc));
+             
+                %% SAVE DATA FROM THIS RUN:
                 % Find the index to split up this vector at!
                 splitIndex = find(simOut.whichFieldToAnimate == 1,1);
 
@@ -290,7 +275,6 @@ for a_prime = A_PRIME
 
                 disp("Actual LVF fuel:")
                 disp(simOut.F_act(end) - simOut.F_act(splitIndex));
-
 
                 %% SAVE THE ESTIMATES AND ACTUAL TIME AND FUEL USAGE!
                 alpha_index = find(A_PRIME == a_prime,1);
@@ -313,7 +297,6 @@ for a_prime = A_PRIME
                 ResultsStructure.KC(alpha_index, a_index, ic_index, w_index) = kc;
                 ResultsStructure.KA(alpha_index, a_index, ic_index, w_index) = ka;
                 ResultsStructure.VMAX(alpha_index, a_index, ic_index, w_index) = v_max;
-
 
                 %% DO THE PLOTTING:
                 myColor = [0.9500, 0.1, 0.1];
@@ -338,7 +321,8 @@ for a_prime = A_PRIME
                         box on % put box around new pair of axes
                         hold on
                         grid on
-                        indexOfInterest = (simOut.t < higherInterestingTValue) & (simOut.t > lowerInterestingTValue); % range of t near perturbation
+                        indexOfInterest = ... range of t near perturbation
+                            (simOut.t < higherInterestingTValue) & (simOut.t > lowerInterestingTValue); 
                         plot(simOut.t(indexOfInterest),simOut.a_norm(indexOfInterest)) % plot on new axes
                         plot([lowerInterestingTValue higherInterestingTValue],[a_max a_max],'k--')
                     end
@@ -370,7 +354,6 @@ for a_prime = A_PRIME
                         pdfplot2(gcf, thisCaseSaveName + "rAndThetaCLVF");
                     end
 
-
                 % Plotting the distance and angle theta over time:
                     figure
                     subplot(2,1,1);
@@ -392,7 +375,6 @@ for a_prime = A_PRIME
                         pdfplot2(gcf, thisCaseSaveName + "rAndThetaLVF");
                     end
                 end
-
 
                 % Plotting the desired and actual speed over time:
                 if plotSpd
@@ -454,7 +436,7 @@ for a_prime = A_PRIME
                 %% Plot the 3D path - will help see what is going on for the underestimating of fuel:
                 if plotPath
                     figure
-                    plot3(simOut.rC_T(:,1),simOut.rC_T(:,2),simOut.rC_T(:,3));
+                    plot3(simOut.rC_T(:,1),simOut.rC_T(:,2),simOut.rC_T(:,3), 'r-', 'linewidth',2);
                     hold on
                     grid on
                     xlabel('x (m)');
@@ -489,8 +471,6 @@ for a_prime = A_PRIME
                 targetColour = [0.8500, 0.3250, 0.0980];
                 chaserColour = [0.75 0.75 0.75];
 
-
-
                 %% Do the timelapse:
                 if doTimeLapse == 1
                     lyapunovTimeLapse(interestingTimeIndices, simOut.o_prime_T, simOut.d_T, simOut.CT_BI, simOut.rC_T, o_prime, d, animationBoxSize, View, [], [], sizT, sizC, saveImages, saveName...
@@ -501,12 +481,12 @@ for a_prime = A_PRIME
                 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % %%%%%%%%%%%%%%%%%%%%% RUNNING THE ANIMATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                
+                drawPlanes = 0;
                 if animateScenario == 1
                 % lyapunovDrawAnimation(t, OT_t, psi_t, C_BIt, rT_c, OB_t, psi, animationBoxSize, View, numFrames, psi_t_future, OT_t_future)
                     lyapunovDrawAnimation(...
                         simOut.t, ...
-                        simOut.o_hat_T,... 
+                        simOut.o_hat_prime_T,... 
                         simOut.d_T, ...
                         simOut.CT_BI, ...
                         simOut.rC_T, ...
@@ -518,7 +498,9 @@ for a_prime = A_PRIME
                         [], ...
                         [], ...
                         SpacecraftStructure.sizT, ...
-                        SpacecraftStructure.sizC...
+                        SpacecraftStructure.sizC,...
+                        SpacecraftStructure,...
+                        drawPlanes... a one or a zero.
                     );
                 end
 
@@ -528,11 +510,6 @@ for a_prime = A_PRIME
 end
 
 %% SAVE THE HEURISTICS:
-
-    if saveDataForAnalysis == 1
-        save(analysisSaveName,'ResultsStructure');
-    end
-
-
-
-
+if saveDataForAnalysis == 1
+    save(analysisSaveName,'ResultsStructure');
+end

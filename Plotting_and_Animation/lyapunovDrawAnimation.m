@@ -1,4 +1,4 @@
-function [] = lyapunovDrawAnimation(t, OT_t, d_T, CT_BI, rC_T, OB_t, d, animationBoxSize, View, numFrames, psi_t_future, OT_t_future, sizT, sizC)
+function [] = lyapunovDrawAnimation(t, OT_t, d_T, CT_BI, rC_T, OB_t, d, animationBoxSize, View, numFrames, psi_t_future, OT_t_future, sizT, sizC, SpacecraftStructure, drawPlanes)
 
     % First, we'll adjust the indices to not include any where we cannot
     % see the target.
@@ -11,7 +11,6 @@ function [] = lyapunovDrawAnimation(t, OT_t, d_T, CT_BI, rC_T, OB_t, d, animatio
     
     firstInterestingTimeIndex = find(rNorms <= animationBoxSize,1);
 
-%     figure
     gcf;
     indicies = linspace(firstInterestingTimeIndex, numel(t),numFrames);
     indicies = floor(indicies);
@@ -56,6 +55,22 @@ function [] = lyapunovDrawAnimation(t, OT_t, d_T, CT_BI, rC_T, OB_t, d, animatio
             
         % Our final rotation matrix:
             CC_BI = C1(thirdAngle)*ourRotationSoFar;
+            
+        % Draw the four vectors to make the "cone" approximation.
+        if drawPlanes == 1
+            V_i = -SpacecraftStructure.A_cone';
+            plane1 = draw_plane(d_T(i,:), CT_BI(:,:,i)'*V_i(:,1), 50);
+            plane2 = draw_plane(d_T(i,:), CT_BI(:,:,i)'*V_i(:,2), 50);
+            plane3 = draw_plane(d_T(i,:), CT_BI(:,:,i)'*V_i(:,3), 50);
+            plane4 = draw_plane(d_T(i,:), CT_BI(:,:,i)'*V_i(:,4), 50);
+
+            set(plane1, 'FaceAlpha', 0.8);
+            set(plane2, 'FaceAlpha', 0.8);
+            set(plane3, 'FaceAlpha', 0.8);
+            set(plane4, 'FaceAlpha', 0.8);
+        end
+
+        
         
         dNorm = sqrt(sum(d.^2));
             
@@ -64,13 +79,21 @@ function [] = lyapunovDrawAnimation(t, OT_t, d_T, CT_BI, rC_T, OB_t, d, animatio
         zlim([-animationBoxSize animationBoxSize])
         xlim([-animationBoxSize animationBoxSize])
         ylim([-animationBoxSize animationBoxSize])
-        view(View);
+%         view(View);
         grid on
         drawnow limitrate;
 %         pause(0.01);
-        delete(target)
-        delete(chaser)
-        delete(z)
+        if i ~= indicies(end)
+            delete(target)
+            delete(chaser)
+            delete(z)
+            if drawPlanes == 1
+                delete(plane1)
+                delete(plane2)
+                delete(plane3)
+                delete(plane4)
+            end
+        end
         if ~isempty(psi_t_future)
             delete(z_future)
         end

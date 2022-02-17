@@ -29,9 +29,10 @@ SpacecraftStructure.J_z = 5;
 
 % USING THE SQUARE CONE CONSTRAINT:
 % Pick a random rotation for the o_hat_prime vector:
-SpacecraftStructure.C_CB = C2(pi/8) * C3(-pi/7);
+SpacecraftStructure.C_CB = C2(pi/7);
 
-% Get o_hat_prime as this rotation from x:
+% Get o_hat_prime as this rotation from x (has to be from x based
+% on how the cone is constructed in return_square_cone function):
 SpacecraftStructure.o_hat_prime = SpacecraftStructure.C_CB' * [1;0;0];
 
 [SpacecraftStructure.A_cone, SpacecraftStructure.b_cone] = return_square_cone(...

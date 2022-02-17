@@ -47,7 +47,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.gamma{1} = 30*pi/180;
     ICStructure.w_t{1} = 0 * d2r;
     ICStructure.mu0{1} = 0;
-    ICStructure.theta0{1} = 0;
+    ICStructure.theta0{1} = 60*d2r;
 
     ICStructure.rC_I0{2} = [900;-1500;-900]*10^-3;
     ICStructure.vC_I0{2} = [0;0;0]*10^-3;
