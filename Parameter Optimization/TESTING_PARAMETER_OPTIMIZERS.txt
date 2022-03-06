@@ -1,0 +1,9 @@
+I didn't make very clear notes about which parameter optimizer was which,
+or how good any of them would perform. So that is what I am trying to keep
+track of here.
+
+TESTS:
+Tested &&& on day &&&. It was not the good one!
+Tested &&& on day &&&. It WAS the good one!
+
+
