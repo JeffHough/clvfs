@@ -261,7 +261,11 @@ for a_prime = A_PRIME
              
                 %% SAVE DATA FROM THIS RUN:
                 % Find the index to split up this vector at!
-                splitIndex = find(simOut.whichFieldToAnimate == 1,1);
+                try
+                    splitIndex = find(simOut.whichFieldToAnimate == 1,1);
+                catch
+                    splitIndex = -1;
+                end
 
                 % Display the actual time and fuel use:
                 %disp("Actual time:")
@@ -277,231 +281,233 @@ for a_prime = A_PRIME
                 %disp(simOut.F_act(end) - simOut.F_act(splitIndex));
 
                 %% SAVE THE ESTIMATES AND ACTUAL TIME AND FUEL USAGE!
-                alpha_index = find(A_PRIME == a_prime,1);
-                a_index = find(A_MAX == a_max,1);
-                ic_index = find(INITIALCONDITIONSET == initialConditionSet,1);
-                w_index = weightNumber;
+                if splitIndex ~= -1 % Just skip this. Will leave default zeros.
+                    alpha_index = find(A_PRIME == a_prime,1);
+                    a_index = find(A_MAX == a_max,1);
+                    ic_index = find(INITIALCONDITIONSET == initialConditionSet,1);
+                    w_index = weightNumber;
 
-                ResultsStructure.T_EST_VEC(alpha_index, a_index, ic_index, w_index) = T_est;
-                ResultsStructure.F_EST_VEC(alpha_index, a_index, ic_index, w_index) = F_est;
-                ResultsStructure.T_ACT_VEC(alpha_index, a_index, ic_index, w_index) = simOut.t(splitIndex);
-                ResultsStructure.F_ACT_VEC(alpha_index, a_index, ic_index, w_index) = simOut.F_act(splitIndex);
+                    ResultsStructure.T_EST_VEC(alpha_index, a_index, ic_index, w_index) = T_est;
+                    ResultsStructure.F_EST_VEC(alpha_index, a_index, ic_index, w_index) = F_est;
+                    ResultsStructure.T_ACT_VEC(alpha_index, a_index, ic_index, w_index) = simOut.t(splitIndex);
+                    ResultsStructure.F_ACT_VEC(alpha_index, a_index, ic_index, w_index) = simOut.F_act(splitIndex);
 
-                ResultsStructure.T_EST_VEC_LVF(alpha_index, a_index, ic_index, w_index) = T_est_LVF;
-                ResultsStructure.F_EST_VEC_LVF(alpha_index, a_index, ic_index, w_index) = F_est_LVF;
-                ResultsStructure.T_ACT_VEC_LVF(alpha_index, a_index, ic_index, w_index) = simOut.t(end) - simOut.t(splitIndex);
-                ResultsStructure.F_ACT_VEC_LVF(alpha_index, a_index, ic_index, w_index) = simOut.F_act(end) - simOut.F_act(splitIndex);
+                    ResultsStructure.T_EST_VEC_LVF(alpha_index, a_index, ic_index, w_index) = T_est_LVF;
+                    ResultsStructure.F_EST_VEC_LVF(alpha_index, a_index, ic_index, w_index) = F_est_LVF;
+                    ResultsStructure.T_ACT_VEC_LVF(alpha_index, a_index, ic_index, w_index) = simOut.t(end) - simOut.t(splitIndex);
+                    ResultsStructure.F_ACT_VEC_LVF(alpha_index, a_index, ic_index, w_index) = simOut.F_act(end) - simOut.F_act(splitIndex);
 
-                %% SAVE THE SELECTED PARAMETERS:
-                ResultsStructure.B(alpha_index, a_index, ic_index, w_index) = b;
-                ResultsStructure.KC(alpha_index, a_index, ic_index, w_index) = kc;
-                ResultsStructure.KA(alpha_index, a_index, ic_index, w_index) = ka;
-                ResultsStructure.VMAX(alpha_index, a_index, ic_index, w_index) = v_max;
+                    %% SAVE THE SELECTED PARAMETERS:
+                    ResultsStructure.B(alpha_index, a_index, ic_index, w_index) = b;
+                    ResultsStructure.KC(alpha_index, a_index, ic_index, w_index) = kc;
+                    ResultsStructure.KA(alpha_index, a_index, ic_index, w_index) = ka;
+                    ResultsStructure.VMAX(alpha_index, a_index, ic_index, w_index) = v_max;
 
-                %% DO THE PLOTTING:
-                myColor = [0.9500, 0.1, 0.1];
+                    %% DO THE PLOTTING:
+                    myColor = [0.9500, 0.1, 0.1];
 
-                % Plotting the acceleration magnitude over time:
-                if plotAcc
-                    figure
-                    plot(simOut.t, simOut.a_norm,'color',myColor);
-                    hold on
-                    grid on
-                    plot([0, simOut.t(end)], [a_max, a_max],'k--');
-                    lgd = legend("Acceleration magnitude", "Acceleration limit");
-                    xlabel("Time (s)");
-                    ylabel("Acc. magnitude (m/s^2)");
-                    ylim([0 a_max*1.1])
-
-                    % CREATE THE NEW AXES AND ZOOM-IN TO THE AREA OF INTEREST!
-
-                    % create a new pair of axes inside current figure
-                    if doZoomedIn
-                        axes('position',[.3 .475 .25 .25]) 
-                        box on % put box around new pair of axes
+                    % Plotting the acceleration magnitude over time:
+                    if plotAcc
+                        figure
+                        plot(simOut.t, simOut.a_norm,'color',myColor);
                         hold on
                         grid on
-                        indexOfInterest = ... range of t near perturbation
-                            (simOut.t < higherInterestingTValue) & (simOut.t > lowerInterestingTValue); 
-                        plot(simOut.t(indexOfInterest),simOut.a_norm(indexOfInterest)) % plot on new axes
-                        plot([lowerInterestingTValue higherInterestingTValue],[a_max a_max],'k--')
+                        plot([0, simOut.t(end)], [a_max, a_max],'k--');
+                        lgd = legend("Acceleration magnitude", "Acceleration limit");
+                        xlabel("Time (s)");
+                        ylabel("Acc. magnitude (m/s^2)");
+                        ylim([0 a_max*1.1])
+
+                        % CREATE THE NEW AXES AND ZOOM-IN TO THE AREA OF INTEREST!
+
+                        % create a new pair of axes inside current figure
+                        if doZoomedIn
+                            axes('position',[.3 .475 .25 .25]) 
+                            box on % put box around new pair of axes
+                            hold on
+                            grid on
+                            indexOfInterest = ... range of t near perturbation
+                                (simOut.t < higherInterestingTValue) & (simOut.t > lowerInterestingTValue); 
+                            plot(simOut.t(indexOfInterest),simOut.a_norm(indexOfInterest)) % plot on new axes
+                            plot([lowerInterestingTValue higherInterestingTValue],[a_max a_max],'k--')
+                        end
+
+                        if saveImages == 1
+
+                            pause(0.01)
+                            pdfplot2(gcf, thisCaseSaveName + "acc");
+                        end
                     end
 
-                    if saveImages == 1
+                    % Plotting the distance and angle theta over time:
+                    if plotThetaR
+                        figure
+                        subplot(2,1,1);
+                        grid on
+                        hold on
+                        plot(simOut.t(1:splitIndex-1), simOut.r(1:splitIndex-1),'color',myColor);
+                        ylabel("r (m)")
+                        subplot(2,1,2);
+                        grid on
+                        hold on
+                        plot(simOut.t(1:splitIndex-1), simOut.theta(1:splitIndex-1),'color',myColor);
+                        ylabel("\theta (rad)")
+                        xlabel("Time (s)")
 
-                        pause(0.01)
-                        pdfplot2(gcf, thisCaseSaveName + "acc");
+                        if saveImages == 1
+                            pause(0.01)
+                            pdfplot2(gcf, thisCaseSaveName + "rAndThetaCLVF");
+                        end
+
+                    % Plotting the distance and angle theta over time:
+                        figure
+                        subplot(2,1,1);
+                        grid on
+                        hold on
+                        plot(simOut.t(splitIndex:end), simOut.r(splitIndex:end),'color',myColor);
+                        ylabel("r_d (m)")
+                        subplot(2,1,2);
+                        grid on
+                        hold on
+                        plot([simOut.t(splitIndex), simOut.t(end)], [theta_d, theta_d],'k--','DisplayName','\theta_d');
+                        plot(simOut.t(splitIndex:end), simOut.theta(splitIndex:end),"DisplayName","\theta^'",'color',myColor);
+                        legend();
+                        ylabel("\theta^' (rad)")
+                        xlabel("Time (s)")
+
+                        if saveImages == 1
+                            pause(0.01)
+                            pdfplot2(gcf, thisCaseSaveName + "rAndThetaLVF");
+                        end
                     end
-                end
 
-                % Plotting the distance and angle theta over time:
-                if plotThetaR
-                    figure
-                    subplot(2,1,1);
-                    grid on
-                    hold on
-                    plot(simOut.t(1:splitIndex-1), simOut.r(1:splitIndex-1),'color',myColor);
-                    ylabel("r (m)")
-                    subplot(2,1,2);
-                    grid on
-                    hold on
-                    plot(simOut.t(1:splitIndex-1), simOut.theta(1:splitIndex-1),'color',myColor);
-                    ylabel("\theta (rad)")
-                    xlabel("Time (s)")
+                    % Plotting the desired and actual speed over time:
+                    if plotSpd
+                        figure;
+                        subplot(3,1,1);
+                        grid on
+                        hold on
+                        plot(simOut.t, simOut.h(:,1),"k--","DisplayName","Desired");
+                        plot(simOut.t, simOut.vC_I(:,1),"DisplayName","Actual",'color',myColor);
+                        ylabel("$\dot{r}_x$ (m/s)","interpreter","latex")
+                        legend('location','west');
+                        subplot(3,1,2);
+                        grid on
+                        hold on
+                        plot(simOut.t, simOut.h(:,2),"k--");
+                        plot(simOut.t, simOut.vC_I(:,2),'color',myColor);
 
-                    if saveImages == 1
-                        pause(0.01)
-                        pdfplot2(gcf, thisCaseSaveName + "rAndThetaCLVF");
+                        ylabel("$\dot{r}_y$ (m/s)","interpreter","latex")
+                        subplot(3,1,3);
+                        grid on
+                        hold on
+                        plot(simOut.t, simOut.h(:,3),"k--");
+                        plot(simOut.t, simOut.vC_I(:,3),'color',myColor);
+
+                        ylabel("$\dot{r}_z$ (m/s)","interpreter","latex")
+                        xlabel("Time (s)")
+                        if saveImages == 1
+                            pause(0.01)
+                            pdfplot2(gcf, thisCaseSaveName + "velProfile");
+                            print(gcf,'foo','-painters','-dpdf','-r700');
+                        end
                     end
 
-                % Plotting the distance and angle theta over time:
-                    figure
-                    subplot(2,1,1);
-                    grid on
-                    hold on
-                    plot(simOut.t(splitIndex:end), simOut.r(splitIndex:end),'color',myColor);
-                    ylabel("r_d (m)")
-                    subplot(2,1,2);
-                    grid on
-                    hold on
-                    plot([simOut.t(splitIndex), simOut.t(end)], [theta_d, theta_d],'k--','DisplayName','\theta_d');
-                    plot(simOut.t(splitIndex:end), simOut.theta(splitIndex:end),"DisplayName","\theta^'",'color',myColor);
-                    legend();
-                    ylabel("\theta^' (rad)")
-                    xlabel("Time (s)")
-
-                    if saveImages == 1
-                        pause(0.01)
-                        pdfplot2(gcf, thisCaseSaveName + "rAndThetaLVF");
+                    % Plotting the velocity error over time:
+                    if plotSpdErr
+                        figure
+                        subplot(3,1,1);
+                        grid on
+                        hold on
+                        plot(simOut.t, simOut.h(:,1)-simOut.vC_I(:,1),'color',myColor);
+                        ylabel("$\dot{r}_x$ (m/s)","interpreter","latex")
+                        subplot(3,1,2);
+                        grid on
+                        hold on
+                        plot(simOut.t, simOut.h(:,2)-simOut.vC_I(:,2),'color',myColor);
+                        ylabel("$\dot{r}_y$ (m/s)","interpreter","latex")
+                        subplot(3,1,3);
+                        grid on
+                        hold on
+                        plot(simOut.t, simOut.h(:,3)-simOut.vC_I(:,3),'color',myColor);
+                        ylabel("$\dot{r}_z$ (m/s)","interpreter","latex")
+                        xlabel("Time (s)")
+                        if saveImages == 1
+                            pause(0.01)
+                            pdfplot2(gcf, thisCaseSaveName + "velError");
+                        end
                     end
-                end
 
-                % Plotting the desired and actual speed over time:
-                if plotSpd
-                    figure;
-                    subplot(3,1,1);
-                    grid on
-                    hold on
-                    plot(simOut.t, simOut.h(:,1),"k--","DisplayName","Desired");
-                    plot(simOut.t, simOut.vC_I(:,1),"DisplayName","Actual",'color',myColor);
-                    ylabel("$\dot{r}_x$ (m/s)","interpreter","latex")
-                    legend('location','west');
-                    subplot(3,1,2);
-                    grid on
-                    hold on
-                    plot(simOut.t, simOut.h(:,2),"k--");
-                    plot(simOut.t, simOut.vC_I(:,2),'color',myColor);
-
-                    ylabel("$\dot{r}_y$ (m/s)","interpreter","latex")
-                    subplot(3,1,3);
-                    grid on
-                    hold on
-                    plot(simOut.t, simOut.h(:,3),"k--");
-                    plot(simOut.t, simOut.vC_I(:,3),'color',myColor);
-
-                    ylabel("$\dot{r}_z$ (m/s)","interpreter","latex")
-                    xlabel("Time (s)")
-                    if saveImages == 1
-                        pause(0.01)
-                        pdfplot2(gcf, thisCaseSaveName + "velProfile");
-                        print(gcf,'foo','-painters','-dpdf','-r700');
+                    %% Plot the 3D path - will help see what is going on for the underestimating of fuel:
+                    if plotPath
+                        figure
+                        plot3(simOut.rC_T(:,1),simOut.rC_T(:,2),simOut.rC_T(:,3), 'r-', 'linewidth',2);
+                        hold on
+                        grid on
+                        xlabel('x (m)');
+                        ylabel('y (m)');
+                        zlabel('z (m)');
+                        axis equal
+                        xlim([-2*a 2*a])
+                        ylim([-2*a 2*a])
+                        zlim([-2*a 2*a])
                     end
-                end
-                
-                % Plotting the velocity error over time:
-                if plotSpdErr
-                    figure
-                    subplot(3,1,1);
-                    grid on
-                    hold on
-                    plot(simOut.t, simOut.h(:,1)-simOut.vC_I(:,1),'color',myColor);
-                    ylabel("$\dot{r}_x$ (m/s)","interpreter","latex")
-                    subplot(3,1,2);
-                    grid on
-                    hold on
-                    plot(simOut.t, simOut.h(:,2)-simOut.vC_I(:,2),'color',myColor);
-                    ylabel("$\dot{r}_y$ (m/s)","interpreter","latex")
-                    subplot(3,1,3);
-                    grid on
-                    hold on
-                    plot(simOut.t, simOut.h(:,3)-simOut.vC_I(:,3),'color',myColor);
-                    ylabel("$\dot{r}_z$ (m/s)","interpreter","latex")
-                    xlabel("Time (s)")
-                    if saveImages == 1
-                        pause(0.01)
-                        pdfplot2(gcf, thisCaseSaveName + "velError");
+
+                    %% PLOT THE FUEL USAGE OVER TIME:
+                    if plotDelV
+                        figure
+                        plot(simOut.t, simOut.F_act);
+                        hold on
+                        grid on
+                        ylabel("Fuel usage over time (m/s)")
+                        xlabel("Time (s)");
                     end
-                end
 
-                %% Plot the 3D path - will help see what is going on for the underestimating of fuel:
-                if plotPath
-                    figure
-                    plot3(simOut.rC_T(:,1),simOut.rC_T(:,2),simOut.rC_T(:,3), 'r-', 'linewidth',2);
-                    hold on
-                    grid on
-                    xlabel('x (m)');
-                    ylabel('y (m)');
-                    zlabel('z (m)');
-                    axis equal
-                    xlim([-2*a 2*a])
-                    ylim([-2*a 2*a])
-                    zlim([-2*a 2*a])
-                end
+                    %% Set animate or timelapse settings:
+                    animationBoxSize = 30;
+                    View = [45,45];
 
-                %% PLOT THE FUEL USAGE OVER TIME:
-                if plotDelV
-                    figure
-                    plot(simOut.t, simOut.F_act);
-                    hold on
-                    grid on
-                    ylabel("Fuel usage over time (m/s)")
-                    xlabel("Time (s)");
-                end
+                    % Find the first index where we are within 10 cm:
+                    minInd = find(simOut.r_prime<=animationBoxSize, 1);
+                    maxInd = find(simOut.r_prime<=0.1,1);
 
-                %% Set animate or timelapse settings:
-                animationBoxSize = 30;
-                View = [45,45];
+                    interestingTimeIndices = floor(linspace(minInd, maxInd,8));
+                    saveName = thisCaseSaveName + "t";
+                    targetColour = [0.8500, 0.3250, 0.0980];
+                    chaserColour = [0.75 0.75 0.75];
 
-                % Find the first index where we are within 10 cm:
-                minInd = find(simOut.r_prime<=animationBoxSize, 1);
-                maxInd = find(simOut.r_prime<=0.1,1);
+                    %% Do the timelapse:
+                    if doTimeLapse == 1
+                        lyapunovTimeLapse(interestingTimeIndices, simOut.o_prime_T, simOut.d_T, simOut.CT_BI, simOut.rC_T, o_prime, d, animationBoxSize, View, [], [], sizT, sizC, saveImages, saveName...
+                            ,showPath, targetColour, chaserColour, simOut.t);
+                    end
 
-                interestingTimeIndices = floor(linspace(minInd, maxInd,8));
-                saveName = thisCaseSaveName + "t";
-                targetColour = [0.8500, 0.3250, 0.0980];
-                chaserColour = [0.75 0.75 0.75];
-
-                %% Do the timelapse:
-                if doTimeLapse == 1
-                    lyapunovTimeLapse(interestingTimeIndices, simOut.o_prime_T, simOut.d_T, simOut.CT_BI, simOut.rC_T, o_prime, d, animationBoxSize, View, [], [], sizT, sizC, saveImages, saveName...
-                        ,showPath, targetColour, chaserColour, simOut.t);
-                end
-
-                %%
-                % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                % %%%%%%%%%%%%%%%%%%%%% RUNNING THE ANIMATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                drawPlanes = 0;
-                if animateScenario == 1
-                % lyapunovDrawAnimation(t, OT_t, psi_t, C_BIt, rT_c, OB_t, psi, animationBoxSize, View, numFrames, psi_t_future, OT_t_future)
-                    lyapunovDrawAnimation(...
-                        simOut.t, ...
-                        simOut.o_hat_prime_T,... 
-                        simOut.d_T, ...
-                        simOut.CT_BI, ...
-                        simOut.rC_T, ...
-                        SpacecraftStructure.o_hat_prime, ...
-                        SpacecraftStructure.d, ...
-                        animationBoxSize, ...
-                        View, ...
-                        300, ...
-                        [], ...
-                        [], ...
-                        SpacecraftStructure.sizT, ...
-                        SpacecraftStructure.sizC,...
-                        SpacecraftStructure,...
-                        drawPlanes... a one or a zero.
-                    );
+                    %%
+                    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    % %%%%%%%%%%%%%%%%%%%%% RUNNING THE ANIMATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                    drawPlanes = 0;
+                    if animateScenario == 1
+                    % lyapunovDrawAnimation(t, OT_t, psi_t, C_BIt, rT_c, OB_t, psi, animationBoxSize, View, numFrames, psi_t_future, OT_t_future)
+                        lyapunovDrawAnimation(...
+                            simOut.t, ...
+                            simOut.o_hat_prime_T,... 
+                            simOut.d_T, ...
+                            simOut.CT_BI, ...
+                            simOut.rC_T, ...
+                            SpacecraftStructure.o_hat_prime, ...
+                            SpacecraftStructure.d, ...
+                            animationBoxSize, ...
+                            View, ...
+                            300, ...
+                            [], ...
+                            [], ...
+                            SpacecraftStructure.sizT, ...
+                            SpacecraftStructure.sizC,...
+                            SpacecraftStructure,...
+                            drawPlanes... a one or a zero.
+                        );
+                    end
                 end
 
             end
