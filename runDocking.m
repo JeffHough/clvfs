@@ -48,12 +48,12 @@ SpacecraftStructure = getSpacecraftStructure();
 v_max_MPC = 1;
 
 %% SAFE DISTANCE OPTIONS:
-%A_PRIME = [1, 5, 10, 20];  
-A_PRIME = 10;
+A_PRIME = [1, 5, 10, 20];  
+%A_PRIME = 10;
 
 %% MAX ACCELERATION OPTIONS:
 A_MAX = [1.0, 2.0, 3.0, 4.0, 5.0]; % The maximum acceleration of your vehicle.
-A_MAX = [2];
+%A_MAX = [2];
 
 %% INITIAL CONDITIONS SETS:    
 % Options are from 0->6, with increasing intensity as we go.
@@ -180,10 +180,10 @@ for a_prime = A_PRIME
                 T_est_LVF = T_heur_LVF(a_prime,finalAngle,v_max);
                 F_est_LVF = F_heur_LVF(a_prime,dockingPortNorm,finalAngle,v_max,rotNorm,w_max);
 
-                disp("LVF time estimate:")
-                disp(T_est_LVF);
-                disp("LVF deltaV estimate:")
-                disp(F_est_LVF);
+                %disp("LVF time estimate:")
+                %disp(T_est_LVF);
+                %disp("LVF deltaV estimate:")
+                %disp(F_est_LVF);
                 
                 %% CLVF DESIGN PROCEDURE
                 % PERFORMING THE DESIGN PROCEDURE OF THE THREE GAINS TO SELECT:
@@ -228,10 +228,10 @@ for a_prime = A_PRIME
                 T_est = T_heur(a,b,ka,kc,rC_T0);
                 F_est = F_heur(a,b,ka,kc,rC_T0,vC_T0,rotNorm,w_max);
 
-                disp("T estimate is:")
-                disp(T_est);
-                disp("Fuel estimate is:")
-                disp(F_est);
+                %disp("T estimate is:")
+                %disp(T_est);
+                %disp("Fuel estimate is:")
+                %disp(F_est);
                 
                 %% DESIGN THE MPC:
                 %Q = eye(6) * W_CLVF(1);
@@ -255,26 +255,26 @@ for a_prime = A_PRIME
                 %% RUN THE SIMULATION
                 % See if the simulation will run now:
                 set_param('tumblingExample','StopTime',num2str(T),'FixedStep',num2str(timeStep));
-                tic;
+                %tic;
                 simOut = sim("tumblingExample");
-                disp("Simulation time in seconds: " + num2str(toc));
+                %disp("Simulation time in seconds: " + num2str(toc));
              
                 %% SAVE DATA FROM THIS RUN:
                 % Find the index to split up this vector at!
                 splitIndex = find(simOut.whichFieldToAnimate == 1,1);
 
                 % Display the actual time and fuel use:
-                disp("Actual time:")
-                disp(simOut.t(splitIndex));
+                %disp("Actual time:")
+                %disp(simOut.t(splitIndex));
 
-                disp("Actual fuel:")
-                disp(simOut.F_act(splitIndex));
+                %disp("Actual fuel:")
+                %disp(simOut.F_act(splitIndex));
 
-                disp("Actual LVF time:")
-                disp(simOut.t(end) - simOut.t(splitIndex));
+                %disp("Actual LVF time:")
+                %disp(simOut.t(end) - simOut.t(splitIndex));
 
-                disp("Actual LVF fuel:")
-                disp(simOut.F_act(end) - simOut.F_act(splitIndex));
+                %disp("Actual LVF fuel:")
+                %disp(simOut.F_act(end) - simOut.F_act(splitIndex));
 
                 %% SAVE THE ESTIMATES AND ACTUAL TIME AND FUEL USAGE!
                 alpha_index = find(A_PRIME == a_prime,1);
