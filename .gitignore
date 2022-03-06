@@ -37,7 +37,6 @@ slprj
 *.original
 *.jpg
 *.jpeg
-*.mat
 *.zip
 *.fig
 *.png
