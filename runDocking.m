@@ -180,6 +180,11 @@ for a_prime = A_PRIME
                 T_est_LVF = T_heur_LVF(a_prime,finalAngle,v_max);
                 F_est_LVF = F_heur_LVF(a_prime,dockingPortNorm,finalAngle,v_max,rotNorm,w_max);
 
+                disp("LVF time estimate:")
+                disp(T_est_LVF);
+                disp("LVF deltaV estimate:")
+                disp(F_est_LVF);
+                
                 %% CLVF DESIGN PROCEDURE
                 % PERFORMING THE DESIGN PROCEDURE OF THE THREE GAINS TO SELECT:
 
@@ -227,11 +232,6 @@ for a_prime = A_PRIME
                 disp(T_est);
                 disp("Fuel estimate is:")
                 disp(F_est);
-
-                disp("LVF time estimate:")
-                disp(T_est_LVF);
-                disp("LVF deltaV estimate:")
-                disp(F_est_LVF);
                 
                 %% DESIGN THE MPC:
                 %Q = eye(6) * W_CLVF(1);
