@@ -56,7 +56,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.gamma{2} = 30*pi/180;
     ICStructure.w_t{2} = 2 * d2r;
     ICStructure.mu0{2} = 0;
-    ICStructure.theta0{2} = 0;
+    ICStructure.theta0{2} = 45*d2r;
 
     ICStructure.rC_I0{3} = [30;-50;-30]*10^-3;
     ICStructure.vC_I0{3} = [0;0;0]*10^-3;
@@ -65,7 +65,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.gamma{3} = 30*pi/180;
     ICStructure.w_t{3} = 4 * d2r;
     ICStructure.mu0{3} = 0;
-    ICStructure.theta0{3} = 0;
+    ICStructure.theta0{3} = 30*d2r;
 
     ICStructure.rC_I0{4} = [300;-500;-300]*10^-3;
     ICStructure.vC_I0{4} = [30;-50;10]*10^-3;
@@ -74,7 +74,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.gamma{4} = 30*pi/180;
     ICStructure.w_t{4} = 6 * d2r;
     ICStructure.mu0{4} = 0;
-    ICStructure.theta0{4} = 0;
+    ICStructure.theta0{4} = 15*d2r;
 
     ICStructure.rC_I0{5} = [50;-30;-30]*10^-3;
     ICStructure.vC_I0{5} = [10;-5.7;3.1]*10^-3;
@@ -83,7 +83,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.gamma{5} = 30*pi/180;
     ICStructure.w_t{5} = 8 * d2r;
     ICStructure.mu0{5} = 0;
-    ICStructure.theta0{5} = 0;
+    ICStructure.theta0{5} = 30*d2r;
 
     ICStructure.rC_I0{6} = [5000;-3000;-3000]*10^-3;
     ICStructure.vC_I0{6} = [-2;3;1.0]*10^-3;
@@ -92,7 +92,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.gamma{6} = 30*pi/180;
     ICStructure.w_t{6} = 10 * d2r;
     ICStructure.mu0{6} = 0;
-    ICStructure.theta0{6} = 0;
+    ICStructure.theta0{6} = 40*d2r;
 
     ICStructure.rC_I0{7} = [3000;-3000;5000]*10^-3;
     ICStructure.vC_I0{7} = [0;0;0]*10^-3;
@@ -101,7 +101,7 @@ function [ICStructure] = getICStructure(SpacecraftStructure, MU)
     ICStructure.gamma{7} = 30*pi/180;
     ICStructure.w_t{7} = 12 * d2r;
     ICStructure.mu0{7} = 0;
-    ICStructure.theta0{7} = 0;
+    ICStructure.theta0{7} = 50*d2r;
 
     for icSelection = 1:7
         % Calculate remaining values:

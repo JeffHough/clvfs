@@ -11,9 +11,9 @@ clc
 %     DATA = load('alphaAndBAdjusted');
 %     DATA = load('alphaAndBAdjusted_NO_JERK');
 %     DATA=load('AandBAdj2');
-%     DATA = load('Non_Ad_Hoc3.mat'); % BEST SO FAR!!
+    DATA = load('Non_Ad_Hoc3.mat'); % BEST SO FAR!!
 %     DATA = load('Non_Ad_Hoc4.mat');
-    DATA = load('alteringAlphaPrime');
+%     DATA = load('alteringAlphaPrime');
 
 
     % The structure is like this:

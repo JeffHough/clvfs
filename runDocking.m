@@ -11,13 +11,13 @@ J2 = -1.08264*10^-3;
 % SOME BASIC SIMULATION PARAMETERS:
 
 % Length of the simulation (if required.)
-T = 5000; 
+T = 50000; 
 
 % Timestep of the simulation.
 timeStep = 0.05; 
 
 %% PARAMETERS FOR SIMULATION OUTPUTS:
-animateScenario = 1;
+animateScenario = 0;
 doTimeLapse = 0;
 
 % Do the zoomed in image for the accNorm
@@ -33,10 +33,10 @@ plotAcc = 0;
 plotThetaR = 0;
 plotSpd = 0;
 plotSpdErr = 0;
-plotPath = 1;
+plotPath = 0;
 plotDelV = 0;
 
-analysisSaveName = 'alteringAlphaPrime';
+analysisSaveName = 'checking_fuel_estimate_options';
 
 %% DESCRIBE THE CHASER AND TARGET SPACECRAFT:
 % Only put this code into a function for smaller setup script +
@@ -52,18 +52,18 @@ v_max_MPC = 1;
 A_PRIME = 10;
 
 %% MAX ACCELERATION OPTIONS:
-% A_MAX = [1.0, 2.0, 3.0, 4.0, 5.0]; % The maximum acceleration of your vehicle.
+A_MAX = [1.0, 2.0, 3.0, 4.0, 5.0]; % The maximum acceleration of your vehicle.
 A_MAX = [2];
 
 %% INITIAL CONDITIONS SETS:    
 % Options are from 0->6, with increasing intensity as we go.
-%INITIALCONDITIONSET = [1, 3, 5, 7];
-INITIALCONDITIONSET = [2];
+INITIALCONDITIONSET = [1, 3, 5, 7];
+%INITIALCONDITIONSET = [2];
 
 %%  WEIGHT SETS: 
 % options are 1->7, where 7 penalizes fuel usage the MOST.
-% selectWeightIndices = [1, 2, 3, 4, 5, 6, 7];
-selectedWeightIndices = 5;
+selectedWeightIndices = [1, 2, 3, 4, 5, 6, 7];
+%selectedWeightIndices = 5;
 
 % Return back the weights for the CLVF, LVF:
 WeightStructure = getWeightStructure(selectedWeightIndices);

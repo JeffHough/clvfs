@@ -7,13 +7,13 @@ function [weightStructure] = getWeightStructure(selectWeightIndices)
         
         % Shifted ALL time weights down from Thesis
         
-        W_CLVF0 = [10^4, 10^3, 10^-3];
-        W_CLVF1 = [10^3, 10^3, 10^-3];
-        W_CLVF2 = [10^2; 10^3; 10^-3];
-        W_CLVF3 = [10^2, 10^4, 10^-3];
-        W_CLVF4 = [10^2; 10^5; 10^-3];
-        W_CLVF5 = [10^1, 10^5, 10^-3];
-        W_CLVF6 = [1,    10^5, 10^-3];
+        W_CLVF0 = [10^4, 10^3];
+        W_CLVF1 = [10^3, 10^3];
+        W_CLVF2 = [10^2; 10^3];
+        W_CLVF3 = [10^2, 10^4];
+        W_CLVF4 = [10^2; 10^5];
+        W_CLVF5 = [10^1, 10^5];
+        W_CLVF6 = [1,    10^5];
         
         W_CLVF0 = W_CLVF0./max(W_CLVF0); % Normalize
         W_CLVF1 = W_CLVF1./max(W_CLVF1); % Normalize
