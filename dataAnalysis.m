@@ -4,30 +4,49 @@ clear
 close all
 clc
 
+%% CONTROLS:
+
+% Do I want to make separate plots to group certain things together?
+makeIndependentPlots = 0;
+
+
 %% LOAD IN DATA:
-%     DATA = load("Time_And_Fuel_Heur_Thesis");
-%     DATA = load('softConstraintHeuristics');
-%     DATA = load('ONE_ALPHA_FIXED');
-%     DATA = load('alphaAndBAdjusted');
-%     DATA = load('alphaAndBAdjusted_NO_JERK');
-%     DATA=load('AandBAdj2');
-%     DATA = load('Non_Ad_Hoc3.mat'); % BEST SO FAR!!
-%     DATA = load('Non_Ad_Hoc4.mat');
-%     DATA = load('alteringAlphaPrime');
-DATA = load('checking_fuel_estimate_options.mat');
+% DATA = load("Time_And_Fuel_Heur_Thesis");
+% DATA = load('softConstraintHeuristics');
+% DATA = load('ONE_ALPHA_FIXED');
+% DATA = load('alphaAndBAdjusted');
+% DATA = load('alphaAndBAdjusted_NO_JERK');
+% DATA=load('AandBAdj2');
+% DATA = load('Non_Ad_Hoc3.mat'); % BEST SO FAR!!
+% DATA = load('Non_Ad_Hoc4.mat');
+% DATA = load('alteringAlphaPrime');
+% DATA = load('checking_fuel_estimate_options.mat');
+DATA = load('inMathCostGradient.mat');
         
 % Need to go one layer deeper:
-DATA = DATA.ResultsStructure;
+try
+    DATA = DATA.ResultsStructure;
+catch
+    %DATA=DATA;
+end
+
+alpha_ind = 1:size(DATA.B,1);
+a_ind = 1:size(DATA.B,2);
+c_ind = 1:size(DATA.B,3);
+w_ind = 1:size(DATA.B,4);
+
+if ~isfield(DATA, 'totalNumber')
+   DATA.totalNumber =  numel(alpha_ind)*numel(a_ind)*numel(c_ind)*numel(w_ind);
+end
+   
+
 
 % Do you want to save images? [not sure why this is needed...]
 saveImages = 0;
     
 %% PLOT HEURISTICS FOR CASES:
 
-alpha_ind = 1:size(DATA.B,1);
-a_ind = 1:size(DATA.B,2);
-c_ind = 1:size(DATA.B,3);
-w_ind = 1:size(DATA.B,4);
+
 
 myColors = {...
     [0, 0.4470, 0.7410], ...	
@@ -104,86 +123,88 @@ xlabel("Estimated Fuel, $\Delta\hat{\nu}_{P2}$ (m/s)",'interpreter','latex');
     
 figureNumbers = [44, 45, 46, 47];
 
-for k = alpha_ind
-    
-%     figureNumbers = (5*k:5*k+3);
-    
-    for i = a_ind
-        for j = c_ind
+if makeIndependentPlots
+    for k = alpha_ind
 
-            % RESHAPE THE SEGMENTS WE WANT TO PLOT:
-            T_EST_VEC = reshape(DATA.T_EST_VEC(k,i,j,w_ind),[numel(DATA.T_EST_VEC(k,i,j,w_ind)),1]);
-            T_ACT_VEC = reshape(DATA.T_ACT_VEC(k,i,j,w_ind),[numel(DATA.T_ACT_VEC(k,i,j,w_ind)),1]);
+    %     figureNumbers = (5*k:5*k+3);
 
-            F_EST_VEC = reshape(DATA.F_EST_VEC(k,i,j,w_ind),[numel(DATA.F_EST_VEC(k,i,j,w_ind)),1]);
-            F_ACT_VEC = reshape(DATA.F_ACT_VEC(k,i,j,w_ind),[numel(DATA.F_ACT_VEC(k,i,j,w_ind)),1]);
+        for i = a_ind
+            for j = c_ind
 
-            T_EST_VEC_LVF = reshape(DATA.T_EST_VEC_LVF(k,i,j,w_ind),[numel(DATA.T_EST_VEC_LVF(k,i,j,w_ind)),1]);
-            T_ACT_VEC_LVF = reshape(DATA.T_ACT_VEC_LVF(k,i,j,w_ind),[numel(DATA.T_ACT_VEC_LVF(k,i,j,w_ind)),1]);
+                % RESHAPE THE SEGMENTS WE WANT TO PLOT:
+                T_EST_VEC = reshape(DATA.T_EST_VEC(k,i,j,w_ind),[numel(DATA.T_EST_VEC(k,i,j,w_ind)),1]);
+                T_ACT_VEC = reshape(DATA.T_ACT_VEC(k,i,j,w_ind),[numel(DATA.T_ACT_VEC(k,i,j,w_ind)),1]);
 
-            F_EST_VEC_LVF = reshape(DATA.F_EST_VEC_LVF(k,i,j,w_ind),[numel(DATA.F_EST_VEC_LVF(k,i,j,w_ind)),1]);
-            F_ACT_VEC_LVF = reshape(DATA.F_ACT_VEC_LVF(k,i,j,w_ind),[numel(DATA.F_ACT_VEC_LVF(k,i,j,w_ind)),1]);
+                F_EST_VEC = reshape(DATA.F_EST_VEC(k,i,j,w_ind),[numel(DATA.F_EST_VEC(k,i,j,w_ind)),1]);
+                F_ACT_VEC = reshape(DATA.F_ACT_VEC(k,i,j,w_ind),[numel(DATA.F_ACT_VEC(k,i,j,w_ind)),1]);
 
-            % Heuristic versus actual time:                
-            figure(figureNumbers(1))
-            hold on
-            if i == 1
-                plot(T_EST_VEC,T_ACT_VEC,'color',myColors{j},'marker',myMarkers{j}, "DisplayName","Sim Case " + num2str(j));
-            else
-                plot(T_EST_VEC,T_ACT_VEC,'color',myColors{j},'marker',myMarkers{j}, "HandleVisibility", "off");
+                T_EST_VEC_LVF = reshape(DATA.T_EST_VEC_LVF(k,i,j,w_ind),[numel(DATA.T_EST_VEC_LVF(k,i,j,w_ind)),1]);
+                T_ACT_VEC_LVF = reshape(DATA.T_ACT_VEC_LVF(k,i,j,w_ind),[numel(DATA.T_ACT_VEC_LVF(k,i,j,w_ind)),1]);
+
+                F_EST_VEC_LVF = reshape(DATA.F_EST_VEC_LVF(k,i,j,w_ind),[numel(DATA.F_EST_VEC_LVF(k,i,j,w_ind)),1]);
+                F_ACT_VEC_LVF = reshape(DATA.F_ACT_VEC_LVF(k,i,j,w_ind),[numel(DATA.F_ACT_VEC_LVF(k,i,j,w_ind)),1]);
+
+                % Heuristic versus actual time:                
+                figure(figureNumbers(1))
+                hold on
+                if i == 1
+                    plot(T_EST_VEC,T_ACT_VEC,'color',myColors{j},'marker',myMarkers{j}, "DisplayName","Sim Case " + num2str(j));
+                else
+                    plot(T_EST_VEC,T_ACT_VEC,'color',myColors{j},'marker',myMarkers{j}, "HandleVisibility", "off");
+                end
+                grid on
+                xlabel("Estimated time, $\hat{T}_{P1}$ (s)",'interpreter','latex');
+                ylabel("Actual time, $T_{P1}$ (s)",'interpreter','latex');
+                if i == a_ind(end)
+                    legend('location','eastoutside');
+                end    
+
+                % Heuristic versus actual fuel:    
+                figure(figureNumbers(2))
+                if i == 1
+                    plot(F_EST_VEC,F_ACT_VEC,'color',myColors{j},'marker',myMarkers{j}, "DisplayName","Sim Case " + num2str(j));
+                else
+                    plot(F_EST_VEC,F_ACT_VEC,'color',myColors{j},'marker',myMarkers{j}, "HandleVisibility", "off");
+                end
+                grid on
+                hold on
+                xlabel("Estimated Fuel, $\Delta\hat{\nu}_{P1}$ (m/s)",'interpreter','latex');
+                ylabel("Actual Fuel, $\Delta\nu_{P1}$ (m/s)",'interpreter','latex'); 
+                if i == a_ind(end)
+                    legend('location','eastoutside');
+                end     
+
+                % LVF HEURISTIC TIME:  
+                figure(figureNumbers(3))
+                if i == 1
+                    plot(T_EST_VEC_LVF,T_ACT_VEC_LVF,'color',myColors{j},'marker',myMarkers{j}, "DisplayName","Sim Case " + num2str(j));
+                else
+                    plot(T_EST_VEC_LVF,T_ACT_VEC_LVF,'color',myColors{j},'marker',myMarkers{j}, "HandleVisibility", "off");
+                end
+                grid on
+                hold on
+                ylabel("Actual time, $T_{P2}$ (s)",'interpreter','latex')
+                xlabel("Estimated time, $\hat{T}_{P2}$ (s)",'interpreter','latex')
+                if i == a_ind(end)
+                    legend('location','eastoutside');
+                end
+
+                % Heuristic versus actual fuel:    
+                figure(figureNumbers(4))
+                if i == 1
+                    plot(F_EST_VEC_LVF,F_ACT_VEC_LVF,'color',myColors{j},'marker',myMarkers{j}, "DisplayName","Sim Case " + num2str(j));
+                else
+                    plot(F_EST_VEC_LVF,F_ACT_VEC_LVF,'color',myColors{j},'marker',myMarkers{j}, "HandleVisibility", "off");
+                end
+                grid on
+                hold on
+                ylabel("Actual Fuel, $\Delta\nu_{P2}$ (m/s)",'interpreter','latex');
+                xlabel("Estimated Fuel, $\Delta\hat{\nu}_{P2}$ (m/s)",'interpreter','latex');
+                if i == a_ind(end)
+                    legend('location','eastoutside');
+                end
+
             end
-            grid on
-            xlabel("Estimated time, $\hat{T}_{P1}$ (s)",'interpreter','latex');
-            ylabel("Actual time, $T_{P1}$ (s)",'interpreter','latex');
-            if i == a_ind(end)
-                legend('location','eastoutside');
-            end    
-            
-            % Heuristic versus actual fuel:    
-            figure(figureNumbers(2))
-            if i == 1
-                plot(F_EST_VEC,F_ACT_VEC,'color',myColors{j},'marker',myMarkers{j}, "DisplayName","Sim Case " + num2str(j));
-            else
-                plot(F_EST_VEC,F_ACT_VEC,'color',myColors{j},'marker',myMarkers{j}, "HandleVisibility", "off");
-            end
-            grid on
-            hold on
-            xlabel("Estimated Fuel, $\Delta\hat{\nu}_{P1}$ (m/s)",'interpreter','latex');
-            ylabel("Actual Fuel, $\Delta\nu_{P1}$ (m/s)",'interpreter','latex'); 
-            if i == a_ind(end)
-                legend('location','eastoutside');
-            end     
-            
-            % LVF HEURISTIC TIME:  
-            figure(figureNumbers(3))
-            if i == 1
-                plot(T_EST_VEC_LVF,T_ACT_VEC_LVF,'color',myColors{j},'marker',myMarkers{j}, "DisplayName","Sim Case " + num2str(j));
-            else
-                plot(T_EST_VEC_LVF,T_ACT_VEC_LVF,'color',myColors{j},'marker',myMarkers{j}, "HandleVisibility", "off");
-            end
-            grid on
-            hold on
-            ylabel("Actual time, $T_{P2}$ (s)",'interpreter','latex')
-            xlabel("Estimated time, $\hat{T}_{P2}$ (s)",'interpreter','latex')
-            if i == a_ind(end)
-                legend('location','eastoutside');
-            end
-
-            % Heuristic versus actual fuel:    
-            figure(figureNumbers(4))
-            if i == 1
-                plot(F_EST_VEC_LVF,F_ACT_VEC_LVF,'color',myColors{j},'marker',myMarkers{j}, "DisplayName","Sim Case " + num2str(j));
-            else
-                plot(F_EST_VEC_LVF,F_ACT_VEC_LVF,'color',myColors{j},'marker',myMarkers{j}, "HandleVisibility", "off");
-            end
-            grid on
-            hold on
-            ylabel("Actual Fuel, $\Delta\nu_{P2}$ (m/s)",'interpreter','latex');
-            xlabel("Estimated Fuel, $\Delta\hat{\nu}_{P2}$ (m/s)",'interpreter','latex');
-            if i == a_ind(end)
-                legend('location','eastoutside');
-            end
-
         end
     end
 end
