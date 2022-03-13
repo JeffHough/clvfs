@@ -17,12 +17,13 @@ makeIndependentPlots = 1;
 % DATA = load('alphaAndBAdjusted');
 % DATA = load('alphaAndBAdjusted_NO_JERK');
 % DATA=load('AandBAdj2');
-% DATA = load('Non_Ad_Hoc3.mat'); % BEST SO FAR!!
+% DATA = load('Non_Ad_Hoc3.mat');
 % DATA = load('Non_Ad_Hoc4.mat');
 % DATA = load('alteringAlphaPrime');
 % DATA = load('checking_fuel_estimate_options.mat');
-DATA = load('inMathCostGradient.mat');
+% DATA = load('inMathCostGradient.mat'); [CHAMP]
 % DATA = load('inMathCostGradient_no_max_alpha.mat'); % DID NOT WORK WELL!!
+DATA = load('inMathCostGradient_time_reduced.mat');
 % :O
         
 % Need to go one layer deeper:

@@ -38,7 +38,7 @@ plotDelV = 0;
 
 % This was the last thing programmed into my symbolic sheet... is it it
 % lol?
-analysisSaveName = 'inMathCostGradient';
+analysisSaveName = 'inMathCostGradient_time_reduced';
 
 %% DESCRIBE THE CHASER AND TARGET SPACECRAFT:
 % Only put this code into a function for smaller setup script +
