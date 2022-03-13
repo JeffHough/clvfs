@@ -7,7 +7,7 @@ clc
 %% CONTROLS:
 
 % Do I want to make separate plots to group certain things together?
-makeIndependentPlots = 0;
+makeIndependentPlots = 1;
 
 
 %% LOAD IN DATA:
@@ -22,6 +22,8 @@ makeIndependentPlots = 0;
 % DATA = load('alteringAlphaPrime');
 % DATA = load('checking_fuel_estimate_options.mat');
 DATA = load('inMathCostGradient.mat');
+% DATA = load('inMathCostGradient_no_max_alpha.mat'); % DID NOT WORK WELL!!
+% :O
         
 % Need to go one layer deeper:
 try
