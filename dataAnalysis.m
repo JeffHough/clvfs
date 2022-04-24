@@ -1,13 +1,13 @@
 % This script will be for data analysis of my .mat files...
 
 clear
-close all
+%close all
 clc
 
 %% CONTROLS:
 
 % Do I want to make separate plots to group certain things together?
-makeIndependentPlots = 1;
+makeIndependentPlots = 0;
 
 
 %% LOAD IN DATA:
@@ -23,7 +23,9 @@ makeIndependentPlots = 1;
 % DATA = load('checking_fuel_estimate_options.mat');
 % DATA = load('inMathCostGradient.mat'); [CHAMP]
 % DATA = load('inMathCostGradient_no_max_alpha.mat'); % DID NOT WORK WELL!!
-DATA = load('inMathCostGradient_time_reduced.mat');
+% DATA = load('inMathCostGradient_time_reduced.mat'); % WORKS WELL,
+% POSSIBLE NEW [CHAMP].
+DATA = load('new_fuel_estimate.mat'); % DID NOT WORK WELL... TOO BAD :(
 % :O
         
 % Need to go one layer deeper:
@@ -114,7 +116,7 @@ xlabel("Estimated time, $\hat{T}_{P2}$ (s)",'interpreter','latex')
 
         
 %% Heuristic versus actual fuel:    
-figure(4)
+figure()
 plot(F_EST_VEC_LVF,F_ACT_VEC_LVF,'kx',"DisplayName","Simulation Data");
 grid on
 hold on

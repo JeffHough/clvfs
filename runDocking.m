@@ -50,11 +50,11 @@ SpacecraftStructure = getSpacecraftStructure();
 v_max_MPC = 1;
 
 %% SAFE DISTANCE OPTIONS:
-A_PRIME = [1, 5, 10, 20];  
+A_PRIME = [1, 5, 10, 15, 20];  
 % A_PRIME = 10;
 
 %% MAX ACCELERATION OPTIONS:
-A_MAX = [1.0, 3.0, 5.0]; % The maximum acceleration of your vehicle.
+A_MAX = [1.0, 2.0, 3.0, 4.0, 5.0]; % The maximum acceleration of your vehicle.
 % A_MAX = [5];
 
 %% INITIAL CONDITIONS SETS:    
